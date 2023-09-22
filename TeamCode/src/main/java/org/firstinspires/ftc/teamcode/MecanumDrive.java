@@ -33,6 +33,7 @@ import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
@@ -48,14 +49,14 @@ import java.util.List;
 public final class MecanumDrive {
     public static class Params {
         // drive model parameters
-        public double inPerTick = 0;
-        public double lateralInPerTick = 1;
-        public double trackWidthTicks = 0;
+        public double inPerTick = 0.023564;
+        public double lateralInPerTick = 0.023762;
+        public double trackWidthTicks = 873;
 
         // feedforward parameters (in tick units)
-        public double kS = 0;
-        public double kV = 0;
-        public double kA = 0;
+        public double kS = 0.960801;
+        public double kV = 0.00424555;
+        public double kA = 0.000009;
 
         // path profile parameters (in inches)
         public double maxWheelVel = 50;
@@ -115,6 +116,9 @@ public final class MecanumDrive {
             leftRear = new OverflowEncoder(new RawEncoder(MecanumDrive.this.leftBack));
             rightRear = new OverflowEncoder(new RawEncoder(MecanumDrive.this.rightBack));
             rightFront = new OverflowEncoder(new RawEncoder(MecanumDrive.this.rightFront));
+
+            leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
+            leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
 
             lastLeftFrontPos = leftFront.getPositionAndVelocity().position;
             lastLeftRearPos = leftRear.getPositionAndVelocity().position;
@@ -180,6 +184,9 @@ public final class MecanumDrive {
         leftBack = hardwareMap.get(DcMotorEx.class, "leftBack");
         rightBack = hardwareMap.get(DcMotorEx.class, "rightBack");
         rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
+
+        leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
 
         leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
