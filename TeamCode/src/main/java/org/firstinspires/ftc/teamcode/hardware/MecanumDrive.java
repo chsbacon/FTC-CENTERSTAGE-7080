@@ -1,4 +1,6 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.hardware;
+
+import android.util.Size;
 
 import androidx.annotation.NonNull;
 
@@ -38,12 +40,27 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
+import org.opencv.core.Point;
+import org.opencv.core.Rect;
+import org.opencv.core.Scalar;
+import org.opencv.imgproc.Imgproc;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvCameraRotation;
+import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.lang.Math;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.*;
 
 @Config
 public final class MecanumDrive {
@@ -100,9 +117,14 @@ public final class MecanumDrive {
 
     public final IMU imu;
 
-    public final Localizer localizer;
-    public Pose2d pose;
+    public final AprilTagProcessor tagProcessor;
 
+    public final VisionPortal visionPortal;
+
+    public final Localizer localizer;
+
+    public final ArrayList<String> ids = new ArrayList<String>();
+    public Pose2d pose;
     private final LinkedList<Pose2d> poseHistory = new LinkedList<>();
 
     public class DriveLocalizer implements Localizer {
@@ -179,7 +201,6 @@ public final class MecanumDrive {
         for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
             module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
-
         leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
         leftBack = hardwareMap.get(DcMotorEx.class, "leftBack");
         rightBack = hardwareMap.get(DcMotorEx.class, "rightBack");
@@ -193,6 +214,18 @@ public final class MecanumDrive {
         rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+        tagProcessor = new AprilTagProcessor.Builder()
+                .setDrawAxes(true) //axes on center of AprilTag
+                .setDrawCubeProjection(true) //cube projected from tag
+                .setDrawTagID(true) //display tag number
+                .setDrawTagOutline(true) //border of tag
+                .build();
+        visionPortal = new VisionPortal.Builder()
+                .addProcessor(tagProcessor)
+                .setCamera(hardwareMap.get(WebcamName.class, "Webcam1"))
+                .setCameraResolution(new Size(640,480)) //set resolution
+                .build();
+
         imu = hardwareMap.get(IMU.class, "imu");
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.UP,
@@ -204,6 +237,17 @@ public final class MecanumDrive {
         localizer = new DriveLocalizer();
 
         FlightRecorder.write("MECANUM_PARAMS", PARAMS);
+        ids.add(null);
+        ids.add("BlueL");
+        ids.add("BlueC");
+        ids.add("BlueR");
+        ids.add("RedL");
+        ids.add("RedC");
+        ids.add("RedR");
+        ids.add("RedW");
+        ids.add("RedW");
+        ids.add("BlueW");
+        ids.add("BlueW");
     }
 
     public void setDrivePowers(PoseVelocity2d powers) {
@@ -425,7 +469,6 @@ public final class MecanumDrive {
         Vector2d p2 = p1.plus(halfv);
         c.strokeLine(p1.x, p1.y, p2.x, p2.y);
     }
-
     public TrajectoryActionBuilder actionBuilder(Pose2d beginPose) {
         return new TrajectoryActionBuilder(
                 TurnAction::new,
