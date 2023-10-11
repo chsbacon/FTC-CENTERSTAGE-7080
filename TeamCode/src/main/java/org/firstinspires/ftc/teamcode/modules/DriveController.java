@@ -4,6 +4,7 @@ import static org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAn
 
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.robot.Robot;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.checkerframework.checker.units.qual.Angle;
@@ -14,7 +15,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.hardware.MecanumDrive;
 
 public class DriveController {
-    private HardwareMap robot;
+    private Robot2023 robot;
     private MecanumDrive drive;
     private Telemetry telemetry;
     double botHeading, lastError, integralSum, oldAngleTarget;
@@ -23,7 +24,7 @@ public class DriveController {
     double kI = 0;
     double kD = 0;
     ElapsedTime pidTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-    public void onOpmodeInit(HardwareMap robot, MecanumDrive drive, Telemetry telemetry){
+    public void onOpmodeInit(Robot2023 robot, MecanumDrive drive, Telemetry telemetry){
         this.robot = robot;
         this.drive = drive;
         this.telemetry = telemetry;
