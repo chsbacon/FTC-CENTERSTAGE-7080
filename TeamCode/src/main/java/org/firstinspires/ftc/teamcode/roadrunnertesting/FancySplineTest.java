@@ -11,19 +11,17 @@ import org.firstinspires.ftc.teamcode.hardware.MecanumDrive;
 public final class FancySplineTest extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
+        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(-60, -36, 0));
 
         waitForStart();
 
         Actions.runBlocking(
                 drive.actionBuilder(drive.pose)
-                        .splineTo(new Vector2d(30, 30), Math.PI / 2)
-                        .waitSeconds(1)
-                        .splineToLinearHeading(new Pose2d(60, 0,Math.PI), -Math.PI/2)
-                        .waitSeconds(1)
-                        .setTangent(Math.PI)
-                        .splineToLinearHeading(new Pose2d(20, 0, 0), Math.PI)
-                        .lineToX(0)
+                        .lineToX(-40)
+                        .setTangent(Math.PI/2)
+                        .splineTo(new Vector2d(-36, -12), Math.PI / 2)
+                        .splineTo(new Vector2d(-16, 56), Math.PI/2)
+                        .waitSeconds(3)
                         .build());
 
     }
