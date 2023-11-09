@@ -1,6 +1,8 @@
 package com.example.meepmeeptesting;
 
+import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.noahbres.meepmeep.MeepMeep;
 import com.noahbres.meepmeep.roadrunner.DefaultBotBuilder;
@@ -21,14 +23,25 @@ public class MeepMeepTesting {
                 .setConstraints(50, 50, Math.toRadians(180), Math.toRadians(180), 10.276)
                 .build();
 
-        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(-64, 12, 0))
-                .splineTo(new Vector2d(-36, 52), Math.PI/2)
-                .waitSeconds(1)
+            Action getToBoard = myBot.getDrive().actionBuilder(new Pose2d(new Vector2d(-64, -36), 0))
+                    .waitSeconds(3)
+                    .splineTo(new Vector2d(-35, -30), Math.PI/2)
+                    .splineTo(new Vector2d(-35, -12), Math.PI / 2)
+                    .splineTo(new Vector2d(-36, 52), Math.PI/2)
+                    .build();
+        Action goPark = myBot.getDrive().actionBuilder(new Pose2d(new Vector2d(-36, 52), Math.PI/2)) // ending pose from last action
                 .setTangent(0)
                 .splineToConstantHeading(new Vector2d(-16, 52), 0)
                 .splineToConstantHeading(new Vector2d(-9, 63), Math.PI/2)
                 .waitSeconds(3)
-                .build());
+                .build();
+        myBot.runAction(
+                new SequentialAction(
+                        getToBoard,
+
+                        goPark
+                )
+        );
 
 
         Image img = null;

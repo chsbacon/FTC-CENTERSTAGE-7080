@@ -21,34 +21,35 @@ public class ArmController {
         this.robot = robot;
         this.telemetry = telemetry;
     }
-    Action openClaw(){
+    public Action openClaw(){
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 robot.clawServo.setPosition(CLAW_OPEN);
-                telemetryPacket.addLine("Claw opened");
+                // telemetryPacket.addLine("Claw opened");
                 return false;
             }
         };
     }
-    Action closeClaw(){
+    public Action closeClaw(){
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 robot.clawServo.setPosition(CLAW_CLOSED);
-                telemetryPacket.addLine("Claw closed");
+                // telemetryPacket.addLine("Claw closed");
                 return false;
             }
         };
     }
     public void handleInput(Gamepad gamepad1, Gamepad gamepad2){
-        if (gamepad1.left_bumper){
-            telemetry.log().add("HI open claw");
+        if (gamepad1.left_trigger > 0.5){
+            //telemetry.log().add("HI open claw");
             runBlocking(openClaw());
         }
-        if (gamepad1.right_bumper){
-            telemetry.log().add("HI close claw");
+        if (gamepad1.right_trigger > 0.5){
+            //telemetry.log().add("HI close claw");
             runBlocking(closeClaw());
         }
+        //telemetry.update();
     }
 }
