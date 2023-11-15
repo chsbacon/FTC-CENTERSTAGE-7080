@@ -13,11 +13,12 @@ import org.firstinspires.ftc.teamcode.modules.Robot2023;
 public class BasicTeleOp extends LinearOpMode {
     private DriveController driveController;
     public void runOpMode(){
-        Robot2023 robot = new Robot2023(this, new MecanumDrive(hardwareMap, new Pose2d(0,0,0)), false, true, false);
-
+        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0,0,0));
+        Robot2023 robot = new Robot2023(this, drive, false, true, false);
+        robot.onOpmodeInit();
         waitForStart();
         while (opModeIsActive()){
-            robot.handleInput();
+            robot.handleInput(gamepad1, gamepad2);
             idle();
         }
     }

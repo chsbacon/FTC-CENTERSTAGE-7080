@@ -22,7 +22,7 @@ public class ClawTeleOp extends LinearOpMode {
 
         waitForStart();
         while (opModeIsActive()){
-            robot.handleInput();
+            robot.handleInput(gamepad1, gamepad2);
             idle();
         }
     }
