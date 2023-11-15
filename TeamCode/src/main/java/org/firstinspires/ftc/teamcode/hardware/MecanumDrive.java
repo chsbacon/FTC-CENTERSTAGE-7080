@@ -117,10 +117,6 @@ public final class MecanumDrive {
 
     public final IMU imu;
 
-    public final AprilTagProcessor tagProcessor;
-
-    public final VisionPortal visionPortal;
-
     public final Localizer localizer;
 
     public final ArrayList<String> ids = new ArrayList<String>();
@@ -214,17 +210,6 @@ public final class MecanumDrive {
         rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        tagProcessor = new AprilTagProcessor.Builder()
-                .setDrawAxes(true) //axes on center of AprilTag
-                .setDrawCubeProjection(true) //cube projected from tag
-                .setDrawTagID(true) //display tag number
-                .setDrawTagOutline(true) //border of tag
-                .build();
-        visionPortal = new VisionPortal.Builder()
-                .addProcessor(tagProcessor)
-                .setCamera(hardwareMap.get(WebcamName.class, "Webcam1"))
-                .setCameraResolution(new Size(640,480)) //set resolution
-                .build();
 
         imu = hardwareMap.get(IMU.class, "imu");
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
@@ -237,17 +222,6 @@ public final class MecanumDrive {
         localizer = new DriveLocalizer();
 
         FlightRecorder.write("MECANUM_PARAMS", PARAMS);
-        ids.add(null);
-        ids.add("BlueL");
-        ids.add("BlueC");
-        ids.add("BlueR");
-        ids.add("RedL");
-        ids.add("RedC");
-        ids.add("RedR");
-        ids.add("RedW");
-        ids.add("RedW");
-        ids.add("BlueW");
-        ids.add("BlueW");
     }
 
     public void setDrivePowers(PoseVelocity2d powers) {
