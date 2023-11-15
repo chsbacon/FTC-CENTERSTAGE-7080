@@ -20,7 +20,7 @@ public final class RightBluePark extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(-64, -36, 0));
-        robot = new Robot2023(hardwareMap);
+        robot = new Robot2023(this, drive);
         armController = new ArmController();
         armController.onOpmodeInit(robot, telemetry);
         Actions.runBlocking(armController.closeClaw());

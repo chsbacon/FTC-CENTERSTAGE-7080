@@ -17,17 +17,12 @@ public class ClawTeleOp extends LinearOpMode {
     private ArmController armController;
     private Robot2023 robot;
     public void runOpMode(){
-        robot = new Robot2023(hardwareMap);
-        driveController = new DriveController();
-        driveController.onOpmodeInit(robot, new MecanumDrive(hardwareMap, new Pose2d(0,0,0)), telemetry);
-        armController = new ArmController();
-        armController.onOpmodeInit(robot, telemetry);
+        robot = new Robot2023(this, new MecanumDrive(hardwareMap, new Pose2d(0,0,0)));
+        robot.onOpmodeInit();
 
         waitForStart();
         while (opModeIsActive()){
-            driveController.handleInput(gamepad1, gamepad2);
-            armController.handleInput(gamepad1,gamepad2);
-
+            robot.handleInput();
             idle();
         }
     }
