@@ -33,34 +33,26 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.hardware.MecanumDrive;
-import org.firstinspires.ftc.teamcode.modules.DriveController;
-import org.firstinspires.ftc.teamcode.modules.VisionController;
-import org.firstinspires.ftc.vision.VisionPortal;
-import org.firstinspires.ftc.vision.tfod.TfodProcessor;
-
-import java.util.List;
+import org.firstinspires.ftc.teamcode.modules.Robot2023;
+import org.firstinspires.ftc.teamcode.modules.TfodController;
 
 @TeleOp(name = "TensorFlow Obj Detection")
 public class TensorFlowObjDetection extends LinearOpMode {
 
-    private VisionController visionController;
+    private Robot2023 robot;
     @Override
     public void runOpMode() {
 
-        visionController = new VisionController();
-        visionController.onOpmodeInit(hardwareMap, new MecanumDrive(hardwareMap, new Pose2d(0,0,0)), telemetry);
-
+        robot = new Robot2023(this, null,false, false, false, true);
+        robot.onOpmodeInit();
 
         waitForStart();
         while (opModeIsActive()&&!isStopRequested()){
-            visionController.stream(gamepad1, gamepad2);
+            robot.doLoop(gamepad1, gamepad2);
             sleep(20);
         }
         // Save more CPU resources when camera is no longer needed.
-        visionController.endStream();
+        robot.tfodController.endStream();
     }
 }

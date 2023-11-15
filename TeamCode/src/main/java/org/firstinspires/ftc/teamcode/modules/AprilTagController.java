@@ -49,7 +49,7 @@ public class AprilTagController {
         ids.add("BlueW");
         ids.add("BlueW");
     }
-    public void handleInput(Gamepad gamepad1, Gamepad gamepad2){
+    public void doLoop(Gamepad gamepad1, Gamepad gamepad2){
         ArrayList<AprilTagDetection> detections = tagProcessor.getDetections();
         if (detections.size() > 0) { //if tag detected
             AprilTagDetection tag = detections.get(0);

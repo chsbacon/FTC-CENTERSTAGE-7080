@@ -12,12 +12,12 @@ public class AprilTagDetection extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
-        Robot2023 robot = new Robot2023(this, drive, false, false, true);
+        Robot2023 robot = new Robot2023(this, drive, false, false, true, false);
         robot.onOpmodeInit();
         waitForStart();
         while(!isStopRequested() && opModeIsActive()) {
-            robot.handleInput(gamepad1, gamepad2);
-            telemetry.addData("Last detection", robot.visionController.getLastIDDetectedName());
+            robot.doLoop(gamepad1, gamepad2);
+            telemetry.addData("Last detection", robot.aprilTagController.getLastIDDetectedName());
             telemetry.update();
         }
     }

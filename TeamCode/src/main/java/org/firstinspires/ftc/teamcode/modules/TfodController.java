@@ -1,20 +1,15 @@
 package org.firstinspires.ftc.teamcode.modules;
 
-import static org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit.DEGREES;
-
 import android.util.Size;
 
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.robot.Robot;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.checkerframework.checker.units.qual.Angle;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.hardware.MecanumDrive;
 import org.firstinspires.ftc.vision.VisionPortal;
@@ -22,9 +17,8 @@ import org.firstinspires.ftc.vision.tfod.TfodProcessor;
 
 import java.util.List;
 
-public class VisionController {
-    private HardwareMap robot;
-    private MecanumDrive drive;
+public class TfodController {
+    private Robot2023 robot;
     private Telemetry telemetry;
     // true if external, false if built in to android phone
     private static final boolean USE_WEBCAM = true;
@@ -35,12 +29,13 @@ public class VisionController {
     private static final String[] LABELS = {
             "Element",
     };
+    public double lastX;
+    public double lastY;
 
     private VisionPortal visionPortal;
     ElapsedTime pidTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-    public void onOpmodeInit(HardwareMap robot, MecanumDrive drive, Telemetry telemetry){
+    public void onOpmodeInit(Robot2023 robot, Telemetry telemetry){
         this.robot = robot;
-        this.drive = drive;
         this.telemetry = telemetry;
         initTfod();
 
@@ -49,7 +44,7 @@ public class VisionController {
         telemetry.addData(">", "Touch Play to start OpMode");
         telemetry.update();
     }
-    public void stream(Gamepad gamepad1, Gamepad gamepad2) {
+    public void doLoop(Gamepad gamepad1, Gamepad gamepad2) {
         telemetryTfod();
         getLabels();
 
@@ -94,7 +89,7 @@ public class VisionController {
 
         // Set the camera (webcam vs. built-in RC phone camera).
         if (USE_WEBCAM) {
-            builder.setCamera(robot.get(WebcamName.class, "Webcam1"));
+            builder.setCamera(robot.webcam);
         } else {
             builder.setCamera(BuiltinCameraDirection.BACK);
         }
@@ -133,12 +128,12 @@ public class VisionController {
 
         // Step through the list of recognitions and display info for each one.
         for (Recognition recognition : currentRecognitions) {
-            double x = (recognition.getLeft() + recognition.getRight()) / 2 ;
-            double y = (recognition.getTop()  + recognition.getBottom()) / 2 ;
+            lastX = (recognition.getLeft() + recognition.getRight()) / 2 ;
+            lastY = (recognition.getTop()  + recognition.getBottom()) / 2 ;
 
             telemetry.addData(""," ");
             telemetry.addData("Image", "%s (%.0f %% Conf.)", recognition.getLabel(), recognition.getConfidence() * 100);
-            telemetry.addData("- Position", "%.0f / %.0f", x, y);
+            telemetry.addData("- Position", "%.0f / %.0f", lastX, lastY);
             telemetry.addData("- Size", "%.0f x %.0f", recognition.getWidth(), recognition.getHeight());
         }   // end for() loop
     }

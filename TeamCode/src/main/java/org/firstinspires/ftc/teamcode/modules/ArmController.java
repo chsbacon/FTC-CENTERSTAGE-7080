@@ -41,7 +41,7 @@ public class ArmController {
             }
         };
     }
-    public void handleInput(Gamepad gamepad1, Gamepad gamepad2){
+    public void doLoop(Gamepad gamepad1, Gamepad gamepad2){
         if (gamepad1.left_trigger > 0.5){
             //telemetry.log().add("HI open claw");
             runBlocking(openClaw());

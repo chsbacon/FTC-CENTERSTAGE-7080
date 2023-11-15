@@ -111,7 +111,7 @@ public class DriveController {
         drive.rightBack.setPower(backRightPower);
 
     }
-    public void handleInput(Gamepad gamepad1, Gamepad gamepad2){
+    public void doLoop(Gamepad gamepad1, Gamepad gamepad2){
         double x_vel = gamepad1.left_stick_x;
         double y_vel = -gamepad1.left_stick_y;
         if(gamepad1.left_trigger >= 0.5){

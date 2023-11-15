@@ -15,11 +15,12 @@ public class Robot2023 {
     Servo clawServo;
     public ArmController armController = null;
     public DriveController driveController = null;
-    public AprilTagController visionController = null;
+    public AprilTagController aprilTagController = null;
+    public TfodController tfodController = null;
     MecanumDrive drive;
     Telemetry telemetry;
     WebcamName webcam;
-    public Robot2023(LinearOpMode opMode, MecanumDrive drive, boolean doArmController, boolean doDriveController, boolean doVisionController){
+    public Robot2023(LinearOpMode opMode, MecanumDrive drive, boolean doArmController, boolean doDriveController, boolean doAprilTags, boolean doTfod){
         this.hardwareMap = opMode.hardwareMap;
         this.telemetry = opMode.telemetry;
         this.drive = drive;
@@ -31,12 +32,15 @@ public class Robot2023 {
         if (doDriveController){
             driveController = new DriveController();
         }
-        if (doVisionController){
-            visionController = new AprilTagController();
+        if (doAprilTags){
+            aprilTagController = new AprilTagController();
+        }
+        if (doTfod){
+            tfodController = new TfodController();
         }
     }
     public Robot2023(LinearOpMode opMode, MecanumDrive drive){
-        this(opMode, drive, true, true, false);
+        this(opMode, drive, true, true, false,false);
     }
     public void onOpmodeInit(){
         if (armController != null){
@@ -47,19 +51,25 @@ public class Robot2023 {
             this.telemetry.update();
             driveController.onOpmodeInit(this, this.drive, this.telemetry);
         }
-        if (visionController != null){
-            visionController.onOpmodeInit(this, this.telemetry, false);
+        if (aprilTagController != null){
+            aprilTagController.onOpmodeInit(this, this.telemetry, false);
+        }
+        if (tfodController != null) {
+            tfodController.onOpmodeInit(this, this.telemetry);
         }
     }
-    public void handleInput(Gamepad gamepad1, Gamepad gamepad2){
+    public void doLoop(Gamepad gamepad1, Gamepad gamepad2){
         if (armController != null){
-            armController.handleInput(gamepad1, gamepad2);
+            armController.doLoop(gamepad1, gamepad2);
         }
         if (driveController != null){
-            driveController.handleInput(gamepad1, gamepad2);
+            driveController.doLoop(gamepad1, gamepad2);
         }
-        if (visionController != null){
-            visionController.handleInput(gamepad1, gamepad2);
+        if (aprilTagController != null){
+            aprilTagController.doLoop(gamepad1, gamepad2);
+        }
+        if (tfodController != null){
+            tfodController.doLoop(gamepad1, gamepad2);
         }
     }
 }
