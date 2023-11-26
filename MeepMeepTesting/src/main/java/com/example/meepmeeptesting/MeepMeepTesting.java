@@ -8,11 +8,19 @@ import com.noahbres.meepmeep.MeepMeep;
 import com.noahbres.meepmeep.roadrunner.DefaultBotBuilder;
 import com.noahbres.meepmeep.roadrunner.entity.RoadRunnerBotEntity;
 
+import com.example.meepmeeptesting.FieldPositions;
+import com.example.meepmeeptesting.FieldPositions.StartingPosition;
+import com.example.meepmeeptesting.FieldPositions.Team;
+import com.example.meepmeeptesting.FieldPositions.SpikeMarkLocation;
+
 import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
+
+import jdk.javadoc.internal.tool.Start;
 
 public class MeepMeepTesting {
     public static void main(String[] args) {
@@ -20,29 +28,22 @@ public class MeepMeepTesting {
 
         RoadRunnerBotEntity myBot = new DefaultBotBuilder(meepMeep)
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
-                .setConstraints(50, 50, Math.toRadians(180), Math.toRadians(180), 10.276)
+                .setConstraints(50, 50, Math.toRadians(180), Math.toRadians(180), 14)
                 .build();
+        myBot.setDimensions(FieldPositions.getRobotSize().y, FieldPositions.getRobotSize().x);
 
-            Action getToBoard = myBot.getDrive().actionBuilder(new Pose2d(new Vector2d(-64, -36), 0))
-                    .waitSeconds(3)
-                    .splineTo(new Vector2d(-35, -30), Math.PI/2)
-                    .splineTo(new Vector2d(-35, -12), Math.PI / 2)
-                    .splineTo(new Vector2d(-36, 52), Math.PI/2)
-                    .build();
-        Action goPark = myBot.getDrive().actionBuilder(new Pose2d(new Vector2d(-36, 52), Math.PI/2)) // ending pose from last action
-                .setTangent(0)
-                .splineToConstantHeading(new Vector2d(-16, 52), 0)
-                .splineToConstantHeading(new Vector2d(-9, 63), Math.PI/2)
-                .waitSeconds(3)
-                .build();
-        myBot.runAction(
-                new SequentialAction(
-                        getToBoard,
-
-                        goPark
-                )
-        );
-
+        // run sequence for state for every combination of spike mark location, team, and starting position
+        ArrayList<Action> actions = new ArrayList<Action>();
+        for (Team team : Team.values()){
+            for (StartingPosition startingPosition : StartingPosition.values()){
+                for (SpikeMarkLocation spikeMarkLocation : SpikeMarkLocation.values()){
+                    actions.add(getSequenceForState(myBot, spikeMarkLocation, team, startingPosition));
+                }
+            }
+        }
+        // run a seuqntial action containing all of actions
+        Action allActions = new SequentialAction(actions);
+        myBot.runAction(allActions);
 
         Image img = null;
         try { img = ImageIO.read(new File("./MeepMeepTesting/field-2023-official.png")); }
@@ -53,5 +54,15 @@ public class MeepMeepTesting {
                 .setBackgroundAlpha(0.95f)
                 .addEntity(myBot)
                 .start();
+    }
+
+    private static Action getSequenceForState(RoadRunnerBotEntity myBot, SpikeMarkLocation spikeMarkLocation, Team team, StartingPosition startingPosition) {
+        Action goToSpikeMark = FieldPositions.getTrajToSpikeMark(myBot.getDrive(), startingPosition, team, spikeMarkLocation);
+        Action goToPrescorePoint = FieldPositions.getTrajEscapeSpikeMark(myBot.getDrive(), startingPosition, team, spikeMarkLocation);
+        return
+                new SequentialAction(
+                        goToSpikeMark,
+                        goToPrescorePoint
+                );
     }
 }

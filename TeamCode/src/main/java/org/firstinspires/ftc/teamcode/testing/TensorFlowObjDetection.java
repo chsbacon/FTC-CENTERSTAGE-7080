@@ -44,7 +44,7 @@ public class TensorFlowObjDetection extends LinearOpMode {
     @Override
     public void runOpMode() {
 
-        robot = new Robot2023(this, null,false, false, false, true);
+        robot = new Robot2023(this, null,false, false, false, true, false);
         robot.onOpmodeInit();
 
         waitForStart();

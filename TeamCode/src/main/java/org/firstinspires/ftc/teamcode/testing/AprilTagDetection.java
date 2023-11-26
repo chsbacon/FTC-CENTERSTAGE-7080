@@ -12,7 +12,7 @@ public class AprilTagDetection extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
-        Robot2023 robot = new Robot2023(this, drive, false, false, true, false);
+        Robot2023 robot = new Robot2023(this, drive, false, false, true, false, false);
         robot.onOpmodeInit();
         waitForStart();
         while(!isStopRequested() && opModeIsActive()) {
