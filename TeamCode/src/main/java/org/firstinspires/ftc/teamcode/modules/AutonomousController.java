@@ -1,5 +1,14 @@
 package org.firstinspires.ftc.teamcode.modules;
 
+import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.ParallelAction;
+import com.acmerobotics.roadrunner.SequentialAction;
+import com.acmerobotics.roadrunner.SleepAction;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
+import java.util.ArrayList;
+
 public class AutonomousController {
 
     /*
@@ -16,11 +25,7 @@ public class AutonomousController {
      */
     enum AutoState {
         NotStarted,
-        GoingToSpikeMark,
-        GoingToPrescorePoint,
-        GoingToBackboard,
-        ScoringBackboard,
-        Parking,
+        RunningActions,
         Finished
     }
     private FieldPositions.StartingPosition startingPosition;
@@ -29,6 +34,7 @@ public class AutonomousController {
     private boolean doPark;
     private AutoState autoState = AutoState.NotStarted;
     private Robot2023 robot;
+    private Telemetry telemetry;
     private FieldPositions.SpikeMarkLocation spikeMarkLocation;
     public void setSettings(FieldPositions.StartingPosition startingPosition, FieldPositions.Team team, boolean doScoreBackboard, boolean doPark){
         this.startingPosition = startingPosition;
@@ -37,8 +43,9 @@ public class AutonomousController {
         this.doPark = doPark;
         this.autoState = AutoState.NotStarted;
     }
-    public void onOpmodeInit(Robot2023 robot){
+    public void onOpmodeInit(Robot2023 robot, Telemetry telemetry){
         this.robot = robot;
+        this.telemetry = telemetry;
     }
     public void doLoop(){
         switch (autoState){
@@ -47,6 +54,7 @@ public class AutonomousController {
                 // if the robot's tfod isn't running then skip this step and assume we're center spike mark
                 // after getting a reading, figure out where we're headed and set it into the robot's current action
                 // all of this is a bit repetitive but code now refactor later (after comp)
+                ArrayList actions = new ArrayList<Action>();
                 if(robot.tfodController != null){
                     double lastX = robot.tfodController.lastX;
                     // here's where the thresholds for position detection are
@@ -54,51 +62,48 @@ public class AutonomousController {
                     if(lastX < 640/3){
                         // left spike mark
                         spikeMarkLocation = FieldPositions.SpikeMarkLocation.Left;
-                        robot.setCurrentAction(FieldPositions.getTrajToSpikeMark(robot.drive, startingPosition, team, spikeMarkLocation));
-                        autoState = AutoState.GoingToSpikeMark;
                     } else if (lastX < 640*2/3){
                         // center spike mark
                         spikeMarkLocation = FieldPositions.SpikeMarkLocation.Center;
-                        robot.setCurrentAction(FieldPositions.getTrajToSpikeMark(robot.drive, startingPosition, team, spikeMarkLocation));
-                        autoState = AutoState.GoingToSpikeMark;
                     } else {
                         // right spike mark
                         spikeMarkLocation = FieldPositions.SpikeMarkLocation.Right;
-                        robot.setCurrentAction(FieldPositions.getTrajToSpikeMark(robot.drive, startingPosition, team, spikeMarkLocation));
-                        autoState = AutoState.GoingToSpikeMark;
                     }
                 } else {
                     // if the tfod isn't running, assume we're center spike mark
                     spikeMarkLocation = FieldPositions.SpikeMarkLocation.Center;
-                    robot.setCurrentAction(FieldPositions.getTrajToSpikeMark(robot.drive, startingPosition, team, spikeMarkLocation));
-                    autoState = AutoState.GoingToSpikeMark;
                 }
-                break;
-            case GoingToSpikeMark:
-                // currently following the trajectory
-                // this stage ends when the robot's current action finishes (i.e. is null)
-                if(robot.getCurrentAction() == null){
-                    // get the next route
-                    robot.setCurrentAction(FieldPositions.getTrajEscapeSpikeMark(robot.drive, startingPosition, team, spikeMarkLocation));
-                    autoState = AutoState.GoingToPrescorePoint;
+                // now that we know where we're headed, set up the actions
+                // first, score the purple pixel on the correct spike mark
+                actions.add(FieldPositions.getTrajToSpikeMark(robot.drive, startingPosition, team, spikeMarkLocation));
+                // then, if we're parking and/or scoring, go to the prescore point
+                if (doPark || doScoreBackboard){
+                    actions.add(FieldPositions.getTrajEscapeSpikeMark(robot.drive, startingPosition, team, spikeMarkLocation));
                 }
-                break;
-            case GoingToPrescorePoint:
-                // currently following the trajectory
-                // this stage ends when the robot's current action finishes (i.e. is null)
+                // then, if we're scoring, go to the backboard and score
+                if (doScoreBackboard){
+                    actions.add(FieldPositions.getTrajToScore(robot.drive, startingPosition, team, spikeMarkLocation));
+                    actions.add(new SequentialAction(robot.armController.openClaw(),new SleepAction(1))); // todo: also add arm
+                }
+                // then, if we're parking, go to the parking spot
+                if (doPark){
+                    actions.add(FieldPositions.getTrajToPark(robot.drive, startingPosition, team, spikeMarkLocation));
+                }
 
+                // now, construct into one big SequentialAction
+                Action theAction = new SequentialAction(actions);
+                // and set it into the robot
+                robot.setCurrentAction(theAction);
+                autoState = AutoState.RunningActions;
                 break;
-            case GoingToBackboard:
-                // do nothing
-                break;
-            case ScoringBackboard:
-                // do nothing
-                break;
-            case Parking:
-                // do nothing
+            case RunningActions:
+                // don't do anything until the action is done (robot.getCurrentAction() == null)
+                if (robot.getCurrentAction() == null){
+                    autoState = AutoState.Finished;
+                }
                 break;
             case Finished:
-                // do nothing
+                // continue doing nothing
                 break;
         }
     }

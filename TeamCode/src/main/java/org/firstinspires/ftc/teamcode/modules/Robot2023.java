@@ -65,6 +65,9 @@ public class Robot2023 {
         if (tfodController != null) {
             tfodController.onOpmodeInit(this, this.telemetry);
         }
+        if (autonomousController != null){
+            autonomousController.onOpmodeInit(this, this.telemetry);
+        }
     }
     public void doLoop(Gamepad gamepad1, Gamepad gamepad2){
         if (armController != null){

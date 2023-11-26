@@ -3,6 +3,7 @@ package com.example.meepmeeptesting;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
+import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.noahbres.meepmeep.MeepMeep;
 import com.noahbres.meepmeep.roadrunner.DefaultBotBuilder;
@@ -41,9 +42,10 @@ public class MeepMeepTesting {
                 }
             }
         }
-        // run a seuqntial action containing all of actions
+        // run a sequential action containing all of actions
         Action allActions = new SequentialAction(actions);
         myBot.runAction(allActions);
+        //myBot.runAction(getSequenceForState(myBot, SpikeMarkLocation.Left, Team.Blue, StartingPosition.Front));
 
         Image img = null;
         try { img = ImageIO.read(new File("./MeepMeepTesting/field-2023-official.png")); }
@@ -59,10 +61,14 @@ public class MeepMeepTesting {
     private static Action getSequenceForState(RoadRunnerBotEntity myBot, SpikeMarkLocation spikeMarkLocation, Team team, StartingPosition startingPosition) {
         Action goToSpikeMark = FieldPositions.getTrajToSpikeMark(myBot.getDrive(), startingPosition, team, spikeMarkLocation);
         Action goToPrescorePoint = FieldPositions.getTrajEscapeSpikeMark(myBot.getDrive(), startingPosition, team, spikeMarkLocation);
+        Action scoreBackboard = FieldPositions.getTrajToScore(myBot.getDrive(), startingPosition, team, spikeMarkLocation);
+        Action park = FieldPositions.getTrajToPark(myBot.getDrive(), startingPosition, team, spikeMarkLocation);
         return
                 new SequentialAction(
                         goToSpikeMark,
-                        goToPrescorePoint
+                        goToPrescorePoint,
+                        scoreBackboard,
+                        park
                 );
     }
 }
