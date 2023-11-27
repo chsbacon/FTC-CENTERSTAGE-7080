@@ -87,7 +87,7 @@ public class AutonomousController {
                 }
                 // then, if we're parking, go to the parking spot
                 if (doPark){
-                    actions.add(FieldPositions.getTrajToPark(robot.drive, startingPosition, team, spikeMarkLocation));
+                    actions.add(FieldPositions.getTrajToPark(robot.drive, startingPosition, team, spikeMarkLocation, doScoreBackboard));
                 }
 
                 // now, construct into one big SequentialAction

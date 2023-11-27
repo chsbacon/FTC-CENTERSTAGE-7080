@@ -62,7 +62,7 @@ public class MeepMeepTesting {
         Action goToSpikeMark = FieldPositions.getTrajToSpikeMark(myBot.getDrive(), startingPosition, team, spikeMarkLocation);
         Action goToPrescorePoint = FieldPositions.getTrajEscapeSpikeMark(myBot.getDrive(), startingPosition, team, spikeMarkLocation);
         Action scoreBackboard = FieldPositions.getTrajToScore(myBot.getDrive(), startingPosition, team, spikeMarkLocation);
-        Action park = FieldPositions.getTrajToPark(myBot.getDrive(), startingPosition, team, spikeMarkLocation);
+        Action park = FieldPositions.getTrajToPark(myBot.getDrive(), startingPosition, team, spikeMarkLocation, true);
         return
                 new SequentialAction(
                         goToSpikeMark,
