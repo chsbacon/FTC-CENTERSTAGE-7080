@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -16,6 +17,10 @@ public class Robot2023 {
     LinearOpMode opMode;
     public HardwareMap hardwareMap;
     Servo clawServo;
+    public DcMotorEx linearExtenderMotor;
+    public DcMotorEx rightForearmMotor;
+    public DcMotorEx leftForearmMotor;
+    public DcMotorEx intakeMotor;
     public ArmController armController = null;
     public DriveController driveController = null;
     public AprilTagController aprilTagController = null;
@@ -24,13 +29,25 @@ public class Robot2023 {
     MecanumDrive drive;
     Telemetry telemetry;
     WebcamName webcam;
-    Action currentAction = null;
     public Robot2023(LinearOpMode opMode, MecanumDrive drive, boolean doArmController, boolean doDriveController, boolean doAprilTags, boolean doTfod, boolean doAuto){
         this.hardwareMap = opMode.hardwareMap;
         this.telemetry = opMode.telemetry;
         this.drive = drive;
-        this.webcam = hardwareMap.get(WebcamName.class, "Webcam1");
-        clawServo = this.hardwareMap.get(Servo.class, "clawServo");
+        // conditional hardware inits
+        if(doAprilTags || doTfod){
+            this.webcam = hardwareMap.get(WebcamName.class, "Webcam1");
+        }
+        if(doArmController) {
+            clawServo = this.hardwareMap.get(Servo.class, "clawServo");
+            linearExtenderMotor = this.hardwareMap.get(DcMotorEx.class, "linearExtender");
+            rightForearmMotor = this.hardwareMap.get(DcMotorEx.class, "rightForearm");
+            leftForearmMotor = this.hardwareMap.get(DcMotorEx.class, "leftForearm");
+        }
+//        if(doIntake){
+//            intakeMotor = this.hardwareMap.get(DcMotorEx.class, "intakeMotor");
+//        }
+
+        // controller inits
         if (doArmController){
             armController = new ArmController();
         }
@@ -51,6 +68,7 @@ public class Robot2023 {
         this(opMode, drive, true, true, false,false, false);
     }
     public void onOpmodeInit(){
+        //drive.imu.resetYaw();
         if (armController != null){
             armController.onOpmodeInit(this, this.telemetry);
         }
@@ -82,24 +100,10 @@ public class Robot2023 {
         if (tfodController != null){
             tfodController.doLoop(gamepad1, gamepad2);
         }
-        if (currentAction != null){
-            FtcDashboard dash = FtcDashboard.getInstance();
-            TelemetryPacket packet = new TelemetryPacket();
-            if (!currentAction.run(packet)){
-                currentAction = null;
-            }
-            dash.sendTelemetryPacket(packet);
+        if(autonomousController != null){
+            autonomousController.doLoop();
         }
     }
 
-    public void setCurrentAction(Action action){
-        // this setup has a problem: if you set a new action before the old one is done, the old one will be rudely interrupted
-        // so the caller has to see if it's interrupting anything and make a judgement call
-        // it's not great but i don't have much time so this is what we get for now
-        currentAction = action;
 
-    }
-    public Action getCurrentAction(){
-        return currentAction;
-    }
 }

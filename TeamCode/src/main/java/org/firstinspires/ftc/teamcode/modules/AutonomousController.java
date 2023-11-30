@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.modules;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.canvas.Canvas;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.SequentialAction;
@@ -36,6 +39,7 @@ public class AutonomousController {
     private Robot2023 robot;
     private Telemetry telemetry;
     private FieldPositions.SpikeMarkLocation spikeMarkLocation;
+    ActionExecutor actionExecutor = new ActionExecutor();
     public void setSettings(FieldPositions.StartingPosition startingPosition, FieldPositions.Team team, boolean doScoreBackboard, boolean doPark){
         this.startingPosition = startingPosition;
         this.team = team;
@@ -73,33 +77,40 @@ public class AutonomousController {
                     // if the tfod isn't running, assume we're center spike mark
                     spikeMarkLocation = FieldPositions.SpikeMarkLocation.Center;
                 }
+                telemetry.log().add("Spike mark location is " + spikeMarkLocation.toString());
                 // now that we know where we're headed, set up the actions
                 // first, score the purple pixel on the correct spike mark
                 actions.add(FieldPositions.getTrajToSpikeMark(robot.drive, startingPosition, team, spikeMarkLocation));
+                telemetry.log().add("Added trajToSpikeMark");
                 // then, if we're parking and/or scoring, go to the prescore point
                 if (doPark || doScoreBackboard){
                     actions.add(FieldPositions.getTrajEscapeSpikeMark(robot.drive, startingPosition, team, spikeMarkLocation));
+                    telemetry.log().add("Added trajEscapeSpikeMark");
                 }
                 // then, if we're scoring, go to the backboard and score
                 if (doScoreBackboard){
                     actions.add(FieldPositions.getTrajToScore(robot.drive, startingPosition, team, spikeMarkLocation));
-                    actions.add(new SequentialAction(robot.armController.openClaw(),new SleepAction(1))); // todo: also add arm
+                    // actions.add(new SequentialAction(robot.armController.openClaw(),new SleepAction(1))); // todo: also add arm
+                    telemetry.log().add("Added trajToScore");
                 }
                 // then, if we're parking, go to the parking spot
                 if (doPark){
                     actions.add(FieldPositions.getTrajToPark(robot.drive, startingPosition, team, spikeMarkLocation, doScoreBackboard));
+                    telemetry.log().add("Added trajToPark");
                 }
 
                 // now, construct into one big SequentialAction
                 Action theAction = new SequentialAction(actions);
                 // and set it into the robot
-                robot.setCurrentAction(theAction);
+                actionExecutor.setAction(theAction);
                 autoState = AutoState.RunningActions;
+                telemetry.log().add("Action constructed, running...");
                 break;
             case RunningActions:
-                // don't do anything until the action is done (robot.getCurrentAction() == null)
-                if (robot.getCurrentAction() == null){
+                actionExecutor.doLoop();
+                if (!actionExecutor.actionIsActive()){
                     autoState = AutoState.Finished;
+                    telemetry.log().add("Finished auto!");
                 }
                 break;
             case Finished:

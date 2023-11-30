@@ -14,6 +14,7 @@ public class BasicTeleOp extends LinearOpMode {
     private DriveController driveController;
     public void runOpMode(){
         MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0,0,0));
+        drive.imu.resetYaw();
         Robot2023 robot = new Robot2023(this, drive, false, true, false, false, false);
         robot.onOpmodeInit();
         waitForStart();

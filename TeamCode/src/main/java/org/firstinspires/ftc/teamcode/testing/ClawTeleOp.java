@@ -17,7 +17,9 @@ public class ClawTeleOp extends LinearOpMode {
     private ArmController armController;
     private Robot2023 robot;
     public void runOpMode(){
-        robot = new Robot2023(this, new MecanumDrive(hardwareMap, new Pose2d(0,0,0)));
+        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0,0,0));
+        drive.imu.resetYaw();
+        robot = new Robot2023(this, drive);
         robot.onOpmodeInit();
 
         waitForStart();

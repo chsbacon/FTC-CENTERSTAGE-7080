@@ -307,9 +307,9 @@ public class FieldPositions {
             // some bug in meepmeep/roadrunner means we can't start *exactly* where we stop
             // but starting a ten thousandth of an inch off is fine
             if (team == Team.Red){
-                startingPose = new Pose2d(redPrescorePoint.plus(new Vector2d(0.0001,0.0001)), Math.PI/2);
+                startingPose = new Pose2d(redPrescorePoint, Math.PI/2);
             } else {
-                startingPose = new Pose2d(bluePrescorePoint.plus(new Vector2d(0.0001,0.0001)), Math.PI/2);
+                startingPose = new Pose2d(bluePrescorePoint, Math.PI/2);
             }
         }
 

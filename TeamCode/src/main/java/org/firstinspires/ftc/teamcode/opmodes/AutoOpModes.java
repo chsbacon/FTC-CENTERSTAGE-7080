@@ -24,18 +24,18 @@ public class AutoOpModes {
         }
     }
     public static void registerPermutation(OpModeManager manager, FieldPositions.Team team, FieldPositions.StartingPosition startingPosition, boolean doScoreBackboard, boolean doPark){
-        String group = "";
+        String group = team.toString()+startingPosition.toString();
+        String name = group;
         if(doScoreBackboard){
-            group += "Score";
+            name += "Score";
         } else {
-            group += "NoScore";
+            name += "NoScore";
         }
         if(doPark){
-            group += "Park";
+            name += "Park";
         } else {
-            group += "NoPark";
+            name += "NoPark";
         }
-        String name = team.toString() + " " + startingPosition.toString() + group;
         OpModeMeta.Builder builder = new OpModeMeta.Builder();
         builder.setFlavor(OpModeMeta.Flavor.AUTONOMOUS);
         builder.setName(name);

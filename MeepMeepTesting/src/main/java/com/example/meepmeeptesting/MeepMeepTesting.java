@@ -34,18 +34,18 @@ public class MeepMeepTesting {
         myBot.setDimensions(FieldPositions.getRobotSize().y, FieldPositions.getRobotSize().x);
 
         // run sequence for state for every combination of spike mark location, team, and starting position
-        ArrayList<Action> actions = new ArrayList<Action>();
-        for (Team team : Team.values()){
-            for (StartingPosition startingPosition : StartingPosition.values()){
-                for (SpikeMarkLocation spikeMarkLocation : SpikeMarkLocation.values()){
-                    actions.add(getSequenceForState(myBot, spikeMarkLocation, team, startingPosition));
-                }
-            }
-        }
-        // run a sequential action containing all of actions
-        Action allActions = new SequentialAction(actions);
-        myBot.runAction(allActions);
-        //myBot.runAction(getSequenceForState(myBot, SpikeMarkLocation.Left, Team.Blue, StartingPosition.Front));
+//        ArrayList<Action> actions = new ArrayList<Action>();
+//        for (Team team : Team.values()){
+//            for (StartingPosition startingPosition : StartingPosition.values()){
+//                for (SpikeMarkLocation spikeMarkLocation : SpikeMarkLocation.values()){
+//                    actions.add(getSequenceForState(myBot, spikeMarkLocation, team, startingPosition));
+//                }
+//            }
+//        }
+//        // run a sequential action containing all of actions
+//        Action allActions = new SequentialAction(actions);
+//        myBot.runAction(allActions);
+        myBot.runAction(getSequenceForState(myBot, SpikeMarkLocation.Center, Team.Blue, StartingPosition.Front));
 
         Image img = null;
         try { img = ImageIO.read(new File("./MeepMeepTesting/field-2023-official.png")); }
