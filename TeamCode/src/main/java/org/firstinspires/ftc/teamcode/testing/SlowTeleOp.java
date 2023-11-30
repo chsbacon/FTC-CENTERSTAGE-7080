@@ -13,7 +13,7 @@ public class SlowTeleOp extends LinearOpMode {
     private DriveController driveController;
     public void runOpMode(){
         MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0,0,0));
-        Robot2023 robot = new Robot2023(this, drive, false, true, false, false, false);
+        Robot2023 robot = new Robot2023(this, drive, false, true, false, false, false, false);
         robot.onOpmodeInit();
         waitForStart();
         while (opModeIsActive()){

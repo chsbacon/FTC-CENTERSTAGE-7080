@@ -29,7 +29,7 @@ public class Robot2023 {
     MecanumDrive drive;
     Telemetry telemetry;
     WebcamName webcam;
-    public Robot2023(LinearOpMode opMode, MecanumDrive drive, boolean doArmController, boolean doDriveController, boolean doAprilTags, boolean doTfod, boolean doAuto){
+    public Robot2023(LinearOpMode opMode, MecanumDrive drive, boolean doArmController, boolean doDriveController, boolean doAprilTags, boolean doTfod, boolean doAuto, boolean doIntake){
         this.hardwareMap = opMode.hardwareMap;
         this.telemetry = opMode.telemetry;
         this.drive = drive;
@@ -40,8 +40,10 @@ public class Robot2023 {
         if(doArmController) {
             clawServo = this.hardwareMap.get(Servo.class, "clawServo");
             linearExtenderMotor = this.hardwareMap.get(DcMotorEx.class, "linearExtender");
-            rightForearmMotor = this.hardwareMap.get(DcMotorEx.class, "rightForearm");
-            leftForearmMotor = this.hardwareMap.get(DcMotorEx.class, "leftForearm");
+            rightForearmMotor = this.hardwareMap.get(DcMotorEx.class, "forearmRight");
+            rightForearmMotor.setDirection(DcMotorEx.Direction.REVERSE);
+            leftForearmMotor = this.hardwareMap.get(DcMotorEx.class, "forearmLeft");
+            leftForearmMotor.setDirection(DcMotorEx.Direction.REVERSE);
         }
 //        if(doIntake){
 //            intakeMotor = this.hardwareMap.get(DcMotorEx.class, "intakeMotor");
@@ -65,7 +67,7 @@ public class Robot2023 {
         }
     }
     public Robot2023(LinearOpMode opMode, MecanumDrive drive){
-        this(opMode, drive, true, true, false,false, false);
+        this(opMode, drive, true, true, false,false, false, true);
     }
     public void onOpmodeInit(){
         //drive.imu.resetYaw();

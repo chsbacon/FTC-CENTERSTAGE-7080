@@ -8,7 +8,8 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 public class EncoderReader extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-        DcMotorEx theMotor = hardwareMap.get(DcMotorEx.class, "linearExtender");
+        DcMotorEx theMotor = hardwareMap.get(DcMotorEx.class, "forearmRight");
+        theMotor.setDirection(DcMotorEx.Direction.REVERSE);
         waitForStart();
         while (opModeIsActive()){
             telemetry.addData("encoder", theMotor.getCurrentPosition());

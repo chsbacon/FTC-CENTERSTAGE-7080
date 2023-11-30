@@ -28,8 +28,8 @@ public class ArmController {
     private final int LINEAR_INTAKE2 = 60;
     private final int FOREARM_MIN = 0;
     private final int FOREARM_MAX = 140;
-    private final int FOREARM_VERTICAL = 102;
-    private final int FOREARM_PARALELL = 75;
+    private final int FOREARM_VERTICAL = 85;
+    private final int FOREARM_PARALELL = 105;
     // expects to be initted with arm in intake
     private ArmLocation armTargetLocation = ArmLocation.Intake1;
     ActionExecutor actionExecutor = new ActionExecutor();
@@ -92,6 +92,7 @@ public class ArmController {
             doManualArm(gamepad2);
         }
         if(gamepad2.a){
+            armTargetLocation = ArmLocation.Intake1;
             if(!locationIsProtected(armCurrentLocation) || armCurrentLocation == ArmLocation.GeneralProtected){
                 actionExecutor.setAction(new SequentialAction(
                         goToLinearHeightAction(LINEAR_MAX),
@@ -106,6 +107,7 @@ public class ArmController {
             }
         }
         if(gamepad2.b){
+            armTargetLocation = ArmLocation.Intake2;
             if(!locationIsProtected(armCurrentLocation) || armCurrentLocation == ArmLocation.GeneralProtected){
                 actionExecutor.setAction(new SequentialAction(
                         goToLinearHeightAction(LINEAR_MAX),
@@ -120,12 +122,14 @@ public class ArmController {
             }
         }
         if(gamepad2.y){
+            armTargetLocation = ArmLocation.Hang;
             actionExecutor.setAction(new SequentialAction(
                     goToLinearHeightAction(LINEAR_MAX),
                     goToArmPositionAction(FOREARM_VERTICAL)
             ));
         }
         if(gamepad2.x){
+            armTargetLocation = ArmLocation.Score;
             actionExecutor.setAction(new SequentialAction(
                     goToLinearHeightAction(LINEAR_MAX),
                     goToArmPositionAction(FOREARM_PARALELL)

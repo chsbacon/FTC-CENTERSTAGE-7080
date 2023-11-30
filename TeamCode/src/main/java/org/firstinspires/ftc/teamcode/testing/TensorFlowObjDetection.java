@@ -30,6 +30,7 @@
 package org.firstinspires.ftc.teamcode.testing;
 
 import com.acmerobotics.roadrunner.Pose2d;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -38,13 +39,14 @@ import org.firstinspires.ftc.teamcode.modules.Robot2023;
 import org.firstinspires.ftc.teamcode.modules.TfodController;
 
 @TeleOp(name = "TensorFlow Obj Detection")
+@Disabled
 public class TensorFlowObjDetection extends LinearOpMode {
 
     private Robot2023 robot;
     @Override
     public void runOpMode() {
 
-        robot = new Robot2023(this, null,false, false, false, true, false);
+        robot = new Robot2023(this, null,false, false, false, true, false, false);
         robot.onOpmodeInit();
 
         waitForStart();
