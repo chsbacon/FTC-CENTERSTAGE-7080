@@ -90,7 +90,16 @@ public class AutonomousController {
                 // then, if we're scoring, go to the backboard and score
                 if (doScoreBackboard){
                     actions.add(FieldPositions.getTrajToScore(robot.drive, startingPosition, team, spikeMarkLocation));
-                    // actions.add(new SequentialAction(robot.armController.openClaw(),new SleepAction(1))); // todo: also add arm
+//                    actions.add(new SequentialAction(
+//                            robot.armController.goToLinearHeightAction(robot.armController.LINEAR_MAX),// lift out of pit
+//                            robot.armController.goToArmPositionAction(robot.armController.FOREARM_MAX),//position arm to drop
+//                            robot.armController.goToLinearHeightAction(robot.armController.LINEAR_MIN),//lower arm for better accuracy
+//                            robot.armController.openClawAction(),// drop pixel
+//                            new SleepAction(.5),// make sure claw is fully open
+//                            robot.armController.goToLinearHeightAction(robot.armController.LINEAR_MAX),// raise up to clear baseplate on way in
+//                            robot.armController.goToArmPositionAction(robot.armController.FOREARM_MIN),//go back into intake are
+//                            robot.armController.goToLinearHeightAction(robot.armController.LINEAR_MIN)// re-enter intake
+//                    )); // todo: also add arm
                     telemetry.log().add("Added trajToScore");
                 }
                 // then, if we're parking, go to the parking spot

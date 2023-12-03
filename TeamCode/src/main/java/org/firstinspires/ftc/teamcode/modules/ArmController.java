@@ -25,13 +25,13 @@ public class ArmController {
     private Telemetry telemetry;
     private final double CLAW_OPEN = 0;
     private final double CLAW_CLOSED = 1;
-    private final int LINEAR_MIN = 0;
-    private final int LINEAR_MAX = 1400;
-    private final int LINEAR_INTAKE2 = 200;
-    private final int FOREARM_MIN = 0;
-    private final int FOREARM_MAX = 165;
-    private static final int FOREARM_VERTICAL = 110;
-    private final int FOREARM_PARALELL = 120;
+    public final int LINEAR_MIN = 0;
+    public final int LINEAR_MAX = 1400;
+    public final int LINEAR_INTAKE2 = 200;
+    public final int FOREARM_MIN = 0;
+    public final int FOREARM_MAX = 165;
+    public static final int FOREARM_VERTICAL = 110;
+    public final int FOREARM_PARALELL = 120;
     static final double DEGREES_PER_COREHEX_TICK = 360.0/288.0;
     private ElapsedTime loopTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
 
