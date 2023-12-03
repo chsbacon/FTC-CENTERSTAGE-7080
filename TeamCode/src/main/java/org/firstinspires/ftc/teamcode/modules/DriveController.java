@@ -66,13 +66,13 @@ public class DriveController {
         out = (kP * error) + (kI * integralSum) + (kD * derivative);
         out = Math.min(Math.max(out, -.5), .5); // clamp to -.5 and .5
 
-        telemetry.addData("target: ", "%.2f", targetAng);
-        telemetry.addData("non-normalized ang: ", "%.2f", oldAng);
-        telemetry.addData("current: ", "%.2f", currAng);
-        telemetry.addData("error: ", "%.2f", error);
-        telemetry.addData("i: ", "%.2f", integralSum);
-        telemetry.addData("out: ", "%.2f", out);
-        telemetry.addData("timer", pidTimer.time());
+        telemetry.addData("yaw target: ", "%.2f", targetAng);
+//        telemetry.addData("non-normalized ang: ", "%.2f", oldAng);
+        telemetry.addData("yaw current: ", "%.2f", currAng);
+//        telemetry.addData("error: ", "%.2f", error);
+//        telemetry.addData("i: ", "%.2f", integralSum);
+//        telemetry.addData("out: ", "%.2f", out);
+        telemetry.addData("Yaw controller frequency: ", Math.round(1000/pidTimer.time()));
         telemetry.update();
 
         lastError = error;
