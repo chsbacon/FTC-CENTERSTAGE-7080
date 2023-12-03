@@ -94,11 +94,16 @@ public class Robot2023 {
         if (aprilTagController != null){
             aprilTagController.onOpmodeInit(this, this.telemetry, false);
         }
-        if (tfodController != null) {
-            tfodController.onOpmodeInit(this, this.telemetry);
-        }
         if (autonomousController != null){
             autonomousController.onOpmodeInit(this, this.telemetry);
+        }
+        if (tfodController != null) {
+            if (autonomousController != null) {
+                tfodController.onOpmodeInit(this, this.telemetry, autonomousController.team);
+            } else {
+                telemetry.log().add("WARNING: tfod controller is running without an autonomous controller");
+                tfodController.onOpmodeInit(this, this.telemetry, FieldPositions.Team.Blue);
+            }
         }
         if(intakeController != null){
             intakeController.onOpmodeInit(this, this.telemetry);

@@ -32,7 +32,7 @@ public class AutonomousController {
         Finished
     }
     private FieldPositions.StartingPosition startingPosition;
-    private FieldPositions.Team team;
+    public FieldPositions.Team team;
     private boolean doScoreBackboard;
     private boolean doPark;
     private AutoState autoState = AutoState.NotStarted;

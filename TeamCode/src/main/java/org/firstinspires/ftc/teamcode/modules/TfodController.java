@@ -3,15 +3,11 @@ package org.firstinspires.ftc.teamcode.modules;
 import android.util.Size;
 
 import com.qualcomm.robotcore.hardware.Gamepad;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.robot.Robot;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
-import org.firstinspires.ftc.teamcode.hardware.MecanumDrive;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.tfod.TfodProcessor;
 
@@ -24,7 +20,10 @@ public class TfodController {
     private static final boolean USE_WEBCAM = true;
     private TfodProcessor tfod;
     // file name of custom model (not necessarily object)
-    private static final String TFOD_MODEL_ASSET = "blue_element.tflite";
+    private static final String BLUE_TFOD_MODEL_ASSET = "blue_element.tflite";
+    private static final String RED_TFOD_MODEL_ASSET = "red_element.tflite";
+
+    String USED_MODEL_LOCATION = BLUE_TFOD_MODEL_ASSET;
     // list of object names, A->Z
     private static final String[] LABELS = {
             "Element",
@@ -34,7 +33,13 @@ public class TfodController {
 
     private VisionPortal visionPortal;
     ElapsedTime pidTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-    public void onOpmodeInit(Robot2023 robot, Telemetry telemetry){
+    public void onOpmodeInit(Robot2023 robot, Telemetry telemetry, FieldPositions.Team team){
+        if (team == FieldPositions.Team.Blue){
+            USED_MODEL_LOCATION = BLUE_TFOD_MODEL_ASSET;
+        } else {
+            USED_MODEL_LOCATION = RED_TFOD_MODEL_ASSET;
+        }
+
         this.robot = robot;
         this.telemetry = telemetry;
         initTfod();
@@ -63,7 +68,7 @@ public class TfodController {
     }
     public void getLabels() {
         telemetry.addData("Label list",LABELS[0]);
-        telemetry.addData("File", TFOD_MODEL_ASSET);
+        telemetry.addData("File", USED_MODEL_LOCATION);
     }
     private void initTfod() {
 
@@ -73,7 +78,7 @@ public class TfodController {
 
                 // Use setModelAssetName() if the TF Model is built in as an asset.
                 // Use setModelFileName() if you have downloaded a custom team model to the Robot Controller.
-                .setModelAssetName(TFOD_MODEL_ASSET)
+                .setModelAssetName(USED_MODEL_LOCATION)
                 //.setModelFileName(TFOD_MODEL_FILE)
 
                 .setModelLabels(LABELS)
