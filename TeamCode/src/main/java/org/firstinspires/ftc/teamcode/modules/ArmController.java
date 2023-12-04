@@ -18,6 +18,7 @@ public class ArmController {
         Intake1,// picking up first pixel
         Intake2,//picking up second pixel
         GeneralProtected, // not in intake but still in protected area
+        Passing,
         Hang, // straight vertical +- a few degrees
         Score // between hang and MAX
     }
@@ -29,6 +30,7 @@ public class ArmController {
     public final int LINEAR_MAX = 1400;
     public final int LINEAR_INTAKE2 = 200;
     public final int FOREARM_MIN = 0;
+    public final int FOREARM_PASSING = 37;
     public final int FOREARM_MAX = 165;
     public static final int FOREARM_VERTICAL = 110;
     public final int FOREARM_PARALELL = 120;
@@ -103,8 +105,8 @@ public class ArmController {
         ArmLocation armTargetLocation = getArmLocationFromPositions((int)forearmPID.getSetPoint(), robot.linearExtenderMotor.getTargetPosition());
         ArmLocation armCurrentLocation = getArmLocationFromPositions(robot.leftForearmMotor.getCurrentPosition(), robot.linearExtenderMotor.getCurrentPosition());
         if (!(locationIsProtected(armTargetLocation) || locationIsProtected(armCurrentLocation)) || gamepad2.start){
-            doManualLinear(gamepad2);
-            doManualArm(gamepad2);
+            doManualLinear(gamepad2, gamepad2.start && gamepad2.left_bumper);
+            doManualArm(gamepad2, gamepad2.start && gamepad2.left_bumper);
         }
         if(gamepad2.a){
             armTargetLocation = ArmLocation.Intake1;
@@ -136,7 +138,7 @@ public class ArmController {
                 ));
             }
         }
-        if(gamepad2.y){
+        if(gamepad2.right_bumper){
             armTargetLocation = ArmLocation.Hang;
             actionExecutor.setAction(new SequentialAction(
                     goToLinearHeightAction(LINEAR_MAX),
@@ -144,10 +146,19 @@ public class ArmController {
             ));
         }
         if(gamepad2.x){
+            armTargetLocation = ArmLocation.Passing;
+            actionExecutor.setAction(new SequentialAction(
+                    goToLinearHeightAction(LINEAR_MAX),
+                    goToArmPositionAction(FOREARM_PASSING),
+                    goToLinearHeightAction(LINEAR_MIN)
+            ));
+        }
+        if(gamepad2.y){
             armTargetLocation = ArmLocation.Score;
             actionExecutor.setAction(new SequentialAction(
                     goToLinearHeightAction(LINEAR_MAX),
-                    goToArmPositionAction(FOREARM_PARALELL)
+                    goToArmPositionAction(FOREARM_PARALELL),
+                    goToLinearHeightAction(LINEAR_MIN)
             ));
         }
         if(gamepad2.back && gamepad2.start){
@@ -210,8 +221,10 @@ public class ArmController {
             return ArmLocation.Intake1;
         } else if (linearPosition < LINEAR_INTAKE2 + FUDGE_FACTOR && forearmPosition < FOREARM_MIN + FUDGE_FACTOR){
             return ArmLocation.Intake2;
-        } else if (forearmPosition < FOREARM_VERTICAL - 20){
+        } else if (forearmPosition < FOREARM_PASSING - 10) {
             return ArmLocation.GeneralProtected;
+        } else if (forearmPosition < FOREARM_PASSING + 10){
+            return ArmLocation.Passing;
         } else if (forearmPosition < FOREARM_VERTICAL + 5){
             return ArmLocation.Hang;
         } else {
@@ -225,20 +238,24 @@ public class ArmController {
         robot.rightForearmMotor.setPower(power);
         robot.leftForearmMotor.setPower(power);
     }
-    public void doManualArm(Gamepad gamepad2){
+    public void doManualArm(Gamepad gamepad2, boolean allowPastEndstops){
         double newTargetPosition = forearmPID.getSetPoint();
         if (Math.abs(gamepad2.right_stick_y) > .15){
             newTargetPosition += -5 * gamepad2.right_stick_y; // negative 40 because y is reversed
         }
-        newTargetPosition = clamp(newTargetPosition, FOREARM_MIN, FOREARM_MAX);
+        if(!allowPastEndstops) {
+            newTargetPosition = clamp(newTargetPosition, FOREARM_MIN, FOREARM_MAX);
+        }
         forearmPID.setSetPoint(newTargetPosition);
     }
-    public void doManualLinear(Gamepad gamepad2){
+    public void doManualLinear(Gamepad gamepad2, boolean allowPastEndstops){
         int newTargetPosition = robot.linearExtenderMotor.getTargetPosition();
         if (Math.abs(gamepad2.left_stick_y) > .15){
             newTargetPosition += -40 * gamepad2.left_stick_y; // negative 40 because y is reversed
         }
-        newTargetPosition = (int)clamp(newTargetPosition, LINEAR_MIN, LINEAR_MAX);
+        if(!allowPastEndstops) {
+            newTargetPosition = (int) clamp(newTargetPosition, LINEAR_MIN, LINEAR_MAX);
+        }
         robot.linearExtenderMotor.setTargetPosition(newTargetPosition);
     }
     public Action goToLinearHeightAction(int targetPosition){
