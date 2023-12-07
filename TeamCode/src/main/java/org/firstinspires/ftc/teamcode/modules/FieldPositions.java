@@ -23,7 +23,7 @@ public class FieldPositions {
         Right
     }
     public static Vector2d getRobotSize(){
-        return new Vector2d(14.5, 14.6);
+        return new Vector2d(15.5, 14.6);
         // x is forward/back, y is left/right
     }
     public static Pose2d getStartingPose(StartingPosition startingPosition, Team team){
@@ -221,12 +221,12 @@ public class FieldPositions {
         }
         return result;
     }
-    public static final Vector2d blueBackboardCenterScoreTarget = new Vector2d(-36, 60 - getRobotSize().x / 2);
-    public static final Vector2d blueBackboardLeftScoreTarget = new Vector2d(-42, 60 - getRobotSize().x / 2);
-    public static final Vector2d blueBackboardRightScoreTarget = new Vector2d(-30, 60 - getRobotSize().x / 2);
-    public static final Vector2d redBackboardCenterScoreTarget = new Vector2d(36, 60 - getRobotSize().x / 2);
-    public static final Vector2d redBackboardLeftScoreTarget = new Vector2d(30, 60 - getRobotSize().x / 2);
-    public static final Vector2d redBackboardRightScoreTarget = new Vector2d(42, 60 - getRobotSize().x / 2);
+    public static final Vector2d blueBackboardCenterScoreTarget = new Vector2d(-46, 60 - getRobotSize().x / 2);
+    public static final Vector2d blueBackboardLeftScoreTarget = new Vector2d(-52, 60 - getRobotSize().x / 2);
+    public static final Vector2d blueBackboardRightScoreTarget = new Vector2d(-40, 60 - getRobotSize().x / 2);
+    public static final Vector2d redBackboardCenterScoreTarget = new Vector2d(46, 60 - getRobotSize().x / 2);
+    public static final Vector2d redBackboardLeftScoreTarget = new Vector2d(40, 60 - getRobotSize().x / 2);
+    public static final Vector2d redBackboardRightScoreTarget = new Vector2d(52, 60 - getRobotSize().x / 2);
     public static Action getTrajToScore(MecanumDrive drive, StartingPosition startingPosition, Team team, SpikeMarkLocation spikeMarkLocation) {
         // assume we're starting from the prescore point
 

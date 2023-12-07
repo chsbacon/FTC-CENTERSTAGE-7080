@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.modules;
 
+import static com.acmerobotics.roadrunner.ftc.Actions.runBlocking;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
@@ -73,11 +75,12 @@ public class AutonomousController {
                         // right spike mark
                         spikeMarkLocation = FieldPositions.SpikeMarkLocation.Right;
                     }
+                    telemetry.log().add("LastX is " + robot.tfodController.lastX + ", so spike mark location is " + spikeMarkLocation.toString());
                 } else {
                     // if the tfod isn't running, assume we're center spike mark
                     spikeMarkLocation = FieldPositions.SpikeMarkLocation.Center;
+                    telemetry.log().add("Cound not get TFOD controller, assuming center mark");
                 }
-                telemetry.log().add("Spike mark location is " + spikeMarkLocation.toString());
                 // now that we know where we're headed, set up the actions
                 // first, score the purple pixel on the correct spike mark
                 actions.add(FieldPositions.getTrajToSpikeMark(robot.drive, startingPosition, team, spikeMarkLocation));
@@ -90,16 +93,16 @@ public class AutonomousController {
                 // then, if we're scoring, go to the backboard and score
                 if (doScoreBackboard){
                     actions.add(FieldPositions.getTrajToScore(robot.drive, startingPosition, team, spikeMarkLocation));
-//                    actions.add(new SequentialAction(
-//                            robot.armController.goToLinearHeightAction(robot.armController.LINEAR_MAX),// lift out of pit
-//                            robot.armController.goToArmPositionAction(robot.armController.FOREARM_MAX),//position arm to drop
-//                            robot.armController.goToLinearHeightAction(robot.armController.LINEAR_MIN),//lower arm for better accuracy
-//                            robot.armController.openClawAction(),// drop pixel
-//                            new SleepAction(.5),// make sure claw is fully open
-//                            robot.armController.goToLinearHeightAction(robot.armController.LINEAR_MAX),// raise up to clear baseplate on way in
-//                            robot.armController.goToArmPositionAction(robot.armController.FOREARM_MIN),//go back into intake are
-//                            robot.armController.goToLinearHeightAction(robot.armController.LINEAR_MIN)// re-enter intake
-//                    )); // todo: also add arm
+                    actions.add(new SequentialAction(
+                            robot.armController.goToLinearHeightAction(robot.armController.LINEAR_MAX),// lift out of pit
+                            robot.armController.goToArmPositionAction(robot.armController.FOREARM_MAX),//position arm to drop
+                            robot.armController.goToLinearHeightAction(robot.armController.LINEAR_MIN),//lower arm for better accuracy
+                            robot.armController.openClawAction(),// drop pixel
+                            new SleepAction(.5),// make sure claw is fully open
+                            robot.armController.goToLinearHeightAction(robot.armController.LINEAR_MAX),// raise up to clear baseplate on way in
+                            robot.armController.goToArmPositionAction(robot.armController.FOREARM_MIN),//go back into intake are
+                            robot.armController.goToLinearHeightAction(robot.armController.LINEAR_MIN)// re-enter intake
+                    )); // todo: also add arm
                     telemetry.log().add("Added trajToScore");
                 }
                 // then, if we're parking, go to the parking spot
@@ -114,6 +117,8 @@ public class AutonomousController {
                 actionExecutor.setAction(theAction);
                 autoState = AutoState.RunningActions;
                 telemetry.log().add("Action constructed, running...");
+//                runBlocking(theAction);
+//                telemetry.log().add("Run complete!");
                 break;
             case RunningActions:
                 actionExecutor.doLoop();
@@ -124,6 +129,7 @@ public class AutonomousController {
                 break;
             case Finished:
                 // continue doing nothing
+                // robot.opMode.stop();
                 break;
         }
     }

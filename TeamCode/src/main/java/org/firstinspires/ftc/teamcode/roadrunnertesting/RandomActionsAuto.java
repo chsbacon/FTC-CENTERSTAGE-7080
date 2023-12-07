@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.hardware.MecanumDrive;
+import org.firstinspires.ftc.teamcode.modules.ActionExecutor;
 import org.firstinspires.ftc.teamcode.modules.ArmController;
 import org.firstinspires.ftc.teamcode.modules.FieldPositions;
 import org.firstinspires.ftc.teamcode.modules.Robot2023;
@@ -24,6 +25,7 @@ public final class RandomActionsAuto extends LinearOpMode {
         armController = new ArmController();
         armController.onOpmodeInit(robot, telemetry);
         Actions.runBlocking(armController.closeClawAction());
+        ActionExecutor actionExecutor = new ActionExecutor();
         waitForStart();
         Action getToBoard = FieldPositions.getTrajToSpikeMark(drive, FieldPositions.StartingPosition.Front, FieldPositions.Team.Blue, Center);
         Action goPark = FieldPositions.getTrajEscapeSpikeMark(drive, FieldPositions.StartingPosition.Front, FieldPositions.Team.Blue, Center);
@@ -33,7 +35,8 @@ public final class RandomActionsAuto extends LinearOpMode {
 //                .splineToConstantHeading(new Vector2d(-9, 63), Math.PI/2)
 //                .waitSeconds(3)
 //                .build();
-        Actions.runBlocking(
+        actionExecutor.setAction(
+        //Actions.runBlocking(
 //                getToBoard
                 new SequentialAction(
                     getToBoard,
@@ -42,6 +45,9 @@ public final class RandomActionsAuto extends LinearOpMode {
                         //FieldPositions.getTrajToPark(drive, FieldPositions.StartingPosition.Front, FieldPositions.Team.Blue, Center, false)
                   )
         );
+        while (actionExecutor.actionIsActive()){
+            actionExecutor.doLoop();
+        }
 
     }
 }

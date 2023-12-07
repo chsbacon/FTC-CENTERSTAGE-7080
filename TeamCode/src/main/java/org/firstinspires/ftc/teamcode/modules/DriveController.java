@@ -20,7 +20,7 @@ public class DriveController {
     private Telemetry telemetry;
     double botHeading, lastError, integralSum, oldAngleTarget;
     // rotation PID constants
-    double kP = .01;
+    double kP = .015;
     double kI = 0;
     double kD = 0;
     ElapsedTime pidTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);

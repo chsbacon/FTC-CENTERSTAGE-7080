@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.SequentialAction;
+import com.acmerobotics.roadrunner.SleepAction;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -114,6 +115,7 @@ public class ArmController {
                 actionExecutor.setAction(new SequentialAction(
                         goToLinearHeightAction(LINEAR_MAX),
                         goToArmPositionAction(FOREARM_MIN),
+                        new SleepAction(0.5),
                         goToLinearHeightAction(LINEAR_MIN)
                 ));
             }
@@ -129,6 +131,7 @@ public class ArmController {
                 actionExecutor.setAction(new SequentialAction(
                         goToLinearHeightAction(LINEAR_MAX),
                         goToArmPositionAction(FOREARM_MIN),
+                        new SleepAction(0.5),
                         goToLinearHeightAction(LINEAR_INTAKE2)
                 ));
             }
@@ -162,7 +165,7 @@ public class ArmController {
             ));
         }
         if(gamepad2.back && gamepad2.start){
-            for(DcMotorEx motor: new DcMotorEx[]{robot.leftForearmMotor, robot.rightForearmMotor, robot.linearExtenderMotor}){
+            for(DcMotorEx motor: new DcMotorEx[]{robot.leftForearmMotor, robot.rightForearmMotor}){
                 motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                 motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
