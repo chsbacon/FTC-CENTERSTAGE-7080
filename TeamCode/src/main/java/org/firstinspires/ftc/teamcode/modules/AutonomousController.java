@@ -37,21 +37,24 @@ public class AutonomousController {
     public FieldPositions.Team team;
     private boolean doScoreBackboard;
     private boolean doPark;
+    private boolean doEarlyScore;
     private AutoState autoState = AutoState.NotStarted;
     private Robot2023 robot;
     private Telemetry telemetry;
     private FieldPositions.SpikeMarkLocation spikeMarkLocation;
     ActionExecutor actionExecutor = new ActionExecutor();
-    public void setSettings(FieldPositions.StartingPosition startingPosition, FieldPositions.Team team, boolean doScoreBackboard, boolean doPark){
+    public void setSettings(FieldPositions.StartingPosition startingPosition, FieldPositions.Team team, boolean doScoreBackboard, boolean doPark, boolean doEarlyScore){
         this.startingPosition = startingPosition;
         this.team = team;
         this.doScoreBackboard = doScoreBackboard;
         this.doPark = doPark;
         this.autoState = AutoState.NotStarted;
+        this.doEarlyScore = doEarlyScore;
     }
     public void onOpmodeInit(Robot2023 robot, Telemetry telemetry){
         this.robot = robot;
         this.telemetry = telemetry;
+        robot.armController.closeClaw();
     }
     public void doLoop(){
         switch (autoState){
@@ -82,35 +85,64 @@ public class AutonomousController {
                     telemetry.log().add("Cound not get TFOD controller, assuming center mark");
                 }
                 // now that we know where we're headed, set up the actions
-                // first, score the purple pixel on the correct spike mark
-                actions.add(FieldPositions.getTrajToSpikeMark(robot.drive, startingPosition, team, spikeMarkLocation));
-                telemetry.log().add("Added trajToSpikeMark");
-                // then, if we're parking and/or scoring, go to the prescore point
-                if (doPark || doScoreBackboard){
-                    actions.add(FieldPositions.getTrajEscapeSpikeMark(robot.drive, startingPosition, team, spikeMarkLocation));
-                    telemetry.log().add("Added trajEscapeSpikeMark");
+                if(doEarlyScore){
+                    actions.add(new ParallelAction(
+                            FieldPositions.getStraightToScoreFromBack(robot.drive, startingPosition, team, spikeMarkLocation),
+                            new SequentialAction(
+                                    robot.armController.goToLinearHeightAction(robot.armController.LINEAR_MAX),// lift out of pit
+                                    new SleepAction(0.5),
+                                    robot.armController.goToArmPositionAction(140),//position arm to drop
+                                    robot.armController.goToLinearHeightAction(robot.armController.LINEAR_MIN),//lower arm for better accuracy)
+                                    new SleepAction(1),
+                                    robot.armController.openClawAction(),
+                                    new SleepAction(0.5),
+                                    robot.armController.goToLinearHeightAction(robot.armController.LINEAR_MAX),
+                                    robot.armController.goToArmPositionAction(robot.armController.FOREARM_MIN),//go back into intake are
+                                    new SleepAction(0.5),// settle arm motion before entering pit
+                                    robot.armController.goToLinearHeightAction(robot.armController.LINEAR_MIN)// re-enter intake
+                            )
+                    ));
+//                    actions.add(new SequentialAction(
+//
+//                    ));
+                    if(doPark) {
+                        actions.add(FieldPositions.getTrajToPark(robot.drive, startingPosition, team, spikeMarkLocation, true));
+                    }
+                } else {
+                    // first, score the purple pixel on the correct spike mark
+                    actions.add(FieldPositions.getTrajToSpikeMark(robot.drive, startingPosition, team, spikeMarkLocation));
+                    telemetry.log().add("Added trajToSpikeMark");
+                    // then, if we're parking and/or scoring, go to the prescore point
+                    if (doPark || doScoreBackboard) {
+                        actions.add(FieldPositions.getTrajEscapeSpikeMark(robot.drive, startingPosition, team, spikeMarkLocation, true));
+                        telemetry.log().add("Added trajEscapeSpikeMark");
+                    } else {
+                        actions.add(FieldPositions.getTrajEscapeSpikeMark(robot.drive, startingPosition, team, spikeMarkLocation, false));
+                        telemetry.log().add("Added backupTrajEscapeSpikeMark");
+                    }
+                    // then, if we're scoring, go to the backboard and score
+                    if (doScoreBackboard) {
+                        actions.add(FieldPositions.getTrajToScore(robot.drive, startingPosition, team, spikeMarkLocation));
+                        actions.add(new SequentialAction(
+                                robot.armController.goToLinearHeightAction(robot.armController.LINEAR_MAX),// lift out of pit
+                                new SleepAction(1),
+                                robot.armController.goToArmPositionAction(robot.armController.FOREARM_PARALELL),//position arm to drop
+                                robot.armController.goToLinearHeightAction(robot.armController.LINEAR_MIN),//lower arm for better accuracy
+                                robot.armController.openClawAction(),// drop pixel
+                                new SleepAction(.5),// make sure claw is fully open
+                                robot.armController.goToLinearHeightAction(robot.armController.LINEAR_MAX),// raise up to clear baseplate on way in
+                                robot.armController.goToArmPositionAction(robot.armController.FOREARM_MIN),//go back into intake are
+                                new SleepAction(3),// settle arm motion before entering pit
+                                robot.armController.goToLinearHeightAction(robot.armController.LINEAR_MIN)// re-enter intake
+                        )); // todo: also add arm
+                        telemetry.log().add("Added trajToScore");
+                    }
+                    // then, if we're parking, go to the parking spot
+                    if (doPark) {
+                        actions.add(FieldPositions.getTrajToPark(robot.drive, startingPosition, team, spikeMarkLocation, doScoreBackboard));
+                        telemetry.log().add("Added trajToPark");
+                    }
                 }
-                // then, if we're scoring, go to the backboard and score
-                if (doScoreBackboard){
-                    actions.add(FieldPositions.getTrajToScore(robot.drive, startingPosition, team, spikeMarkLocation));
-                    actions.add(new SequentialAction(
-                            robot.armController.goToLinearHeightAction(robot.armController.LINEAR_MAX),// lift out of pit
-                            robot.armController.goToArmPositionAction(robot.armController.FOREARM_MAX),//position arm to drop
-                            robot.armController.goToLinearHeightAction(robot.armController.LINEAR_MIN),//lower arm for better accuracy
-                            robot.armController.openClawAction(),// drop pixel
-                            new SleepAction(.5),// make sure claw is fully open
-                            robot.armController.goToLinearHeightAction(robot.armController.LINEAR_MAX),// raise up to clear baseplate on way in
-                            robot.armController.goToArmPositionAction(robot.armController.FOREARM_MIN),//go back into intake are
-                            robot.armController.goToLinearHeightAction(robot.armController.LINEAR_MIN)// re-enter intake
-                    )); // todo: also add arm
-                    telemetry.log().add("Added trajToScore");
-                }
-                // then, if we're parking, go to the parking spot
-                if (doPark){
-                    actions.add(FieldPositions.getTrajToPark(robot.drive, startingPosition, team, spikeMarkLocation, doScoreBackboard));
-                    telemetry.log().add("Added trajToPark");
-                }
-
                 // now, construct into one big SequentialAction
                 Action theAction = new SequentialAction(actions);
                 // and set it into the robot

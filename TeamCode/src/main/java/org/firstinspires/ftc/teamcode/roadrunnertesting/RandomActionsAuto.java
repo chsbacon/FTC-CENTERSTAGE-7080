@@ -28,7 +28,7 @@ public final class RandomActionsAuto extends LinearOpMode {
         ActionExecutor actionExecutor = new ActionExecutor();
         waitForStart();
         Action getToBoard = FieldPositions.getTrajToSpikeMark(drive, FieldPositions.StartingPosition.Front, FieldPositions.Team.Blue, Center);
-        Action goPark = FieldPositions.getTrajEscapeSpikeMark(drive, FieldPositions.StartingPosition.Front, FieldPositions.Team.Blue, Center);
+        Action goPark = FieldPositions.getTrajEscapeSpikeMark(drive, FieldPositions.StartingPosition.Front, FieldPositions.Team.Blue, Center, false);
 //                .setTangent(0)
 //                .waitSeconds(2)
 //                .splineToConstantHeading(new Vector2d(-16, 52), 0)

@@ -59,7 +59,7 @@ class AutonomousOpMode extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         robot = new Robot2023(this, new MecanumDrive(hardwareMap, FieldPositions.getStartingPose(startingPosition, team)), true, false, false, true, true, true);
-        robot.autonomousController.setSettings(startingPosition, team, doScoreBackboard, doPark);
+        robot.autonomousController.setSettings(startingPosition, team, doScoreBackboard, doPark, false);
         robot.onOpmodeInit();
         waitForStart();
 

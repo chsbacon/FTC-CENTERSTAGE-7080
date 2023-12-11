@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.modules;
 
+import static com.acmerobotics.roadrunner.ftc.Actions.runBlocking;
+
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
@@ -266,6 +268,9 @@ public class ArmController {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 robot.linearExtenderMotor.setTargetPosition(targetPosition);
+                if(!robot.linearExtenderMotor.isBusy()){
+                    telemetry.log().add("Finished goToLinearHeightAction!");
+                }
                 return robot.linearExtenderMotor.isBusy();
             }
         };
@@ -273,17 +278,42 @@ public class ArmController {
     public Action goToArmPositionAction(int targetPosition){
         final double TICKS_PER_SEC = 100;
         return new Action() {
+            ElapsedTime armPosTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+            int loopsBeforeArrival = 0;
+            int loopsAfterArrival = 0;
+            int delayedLoops = 0;
+            double maxDelta = 0;
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                if(loopTimer.seconds() < 0.01){
+                    delayedLoops++;
+                    while(loopTimer.seconds() < 0.01){
+                        // do nothing
+                    }
+                }
                 double distToTargetSetpoint = targetPosition - forearmPID.getSetPoint();
                 double deltaThisLoop = TICKS_PER_SEC * loopTimer.seconds();
+                armPosTimer.reset();
+                if(deltaThisLoop > maxDelta){
+                    maxDelta = deltaThisLoop;
+                }
                 if (Math.abs(distToTargetSetpoint) < deltaThisLoop){
                     forearmPID.setSetPoint(targetPosition);
+                    loopsAfterArrival++;
                 } else {
                     forearmPID.setSetPoint(forearmPID.getSetPoint() + deltaThisLoop * Math.signum(distToTargetSetpoint));
+                    loopsBeforeArrival++;
                 }
                 telemetry.addData("deltaThisLoop: ", deltaThisLoop);
                 telemetry.addData("distToTargetSetpoint: ", distToTargetSetpoint);
+                telemetry.addData("loopsbeforearrival: ", loopsBeforeArrival);
+                telemetry.addData("loopsafterarrival: ", loopsAfterArrival);
+                telemetry.addData("maxdelta", maxDelta);
+                telemetry.addData("looptimer", loopTimer.seconds());
+                telemetry.addData("delayedLoops",delayedLoops);
+                if (forearmPID.atSetPoint() && Math.abs(distToTargetSetpoint) < deltaThisLoop){
+                    telemetry.log().add("Finished GoToArmPositionAction");
+                }
                 return !(forearmPID.atSetPoint() && Math.abs(distToTargetSetpoint) < deltaThisLoop);
             }
         };

@@ -34,18 +34,18 @@ public class MeepMeepTesting {
         myBot.setDimensions(FieldPositions.getRobotSize().y, FieldPositions.getRobotSize().x);
 
         // run sequence for state for every combination of spike mark location, team, and starting position
-//        ArrayList<Action> actions = new ArrayList<Action>();
-//        for (Team team : Team.values()){
-//            for (StartingPosition startingPosition : StartingPosition.values()){
-//                for (SpikeMarkLocation spikeMarkLocation : SpikeMarkLocation.values()){
-//                    actions.add(getSequenceForState(myBot, spikeMarkLocation, team, startingPosition));
-//                }
-//            }
-//        }
-//        // run a sequential action containing all of actions
-//        Action allActions = new SequentialAction(actions);
-//        myBot.runAction(allActions);
-        myBot.runAction(getSequenceForState(myBot, SpikeMarkLocation.Center, Team.Blue, StartingPosition.Front));
+        ArrayList<Action> actions = new ArrayList<Action>();
+        for (Team team : Team.values()){
+            for (StartingPosition startingPosition : StartingPosition.values()){
+                for (SpikeMarkLocation spikeMarkLocation : SpikeMarkLocation.values()){
+                    actions.add(getSequenceForState(myBot, spikeMarkLocation, team, startingPosition));
+                }
+            }
+        }
+        // run a sequential action containing all of actions
+        Action allActions = new SequentialAction(actions);
+        myBot.runAction(allActions);
+        //myBot.runAction(getSequenceForState(myBot, SpikeMarkLocation.Center, Team.Blue, StartingPosition.Front));
 
         Image img = null;
         try { img = ImageIO.read(new File("./MeepMeepTesting/field-2023-official.png")); }
@@ -59,16 +59,17 @@ public class MeepMeepTesting {
     }
 
     private static Action getSequenceForState(RoadRunnerBotEntity myBot, SpikeMarkLocation spikeMarkLocation, Team team, StartingPosition startingPosition) {
-        Action goToSpikeMark = FieldPositions.getTrajToSpikeMark(myBot.getDrive(), startingPosition, team, spikeMarkLocation);
-        Action goToPrescorePoint = FieldPositions.getTrajEscapeSpikeMark(myBot.getDrive(), startingPosition, team, spikeMarkLocation);
-        Action scoreBackboard = FieldPositions.getTrajToScore(myBot.getDrive(), startingPosition, team, spikeMarkLocation);
-        Action park = FieldPositions.getTrajToPark(myBot.getDrive(), startingPosition, team, spikeMarkLocation, true);
-        return
-                new SequentialAction(
-                        goToSpikeMark,
-                        goToPrescorePoint,
-                        scoreBackboard,
-                        park
-                );
+        return FieldPositions.getStraightToScoreFromBack(myBot.getDrive(), StartingPosition.Back, team, spikeMarkLocation);
+        //        Action goToSpikeMark = FieldPositions.getTrajToSpikeMark(myBot.getDrive(), startingPosition, team, spikeMarkLocation);
+//        Action goToPrescorePoint = FieldPositions.getTrajEscapeSpikeMark(myBot.getDrive(), startingPosition, team, spikeMarkLocation);
+//        Action scoreBackboard = FieldPositions.getTrajToScore(myBot.getDrive(), startingPosition, team, spikeMarkLocation);
+//        Action park = FieldPositions.getTrajToPark(myBot.getDrive(), startingPosition, team, spikeMarkLocation, true);
+//        return
+//                new SequentialAction(
+//                        goToSpikeMark,
+//                        goToPrescorePoint,
+//                        scoreBackboard,
+//                        park
+//                );
     }
 }
