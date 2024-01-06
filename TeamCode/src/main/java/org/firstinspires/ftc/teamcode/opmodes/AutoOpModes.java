@@ -40,6 +40,7 @@ public class AutoOpModes {
         builder.setFlavor(OpModeMeta.Flavor.AUTONOMOUS);
         builder.setName(name);
         builder.setGroup("Autonomous");
+        builder.setTransitionTarget("IntegratedOpMode"); // automatically select the correct teleop after auto ends
         manager.register(builder.build(), new AutonomousOpMode(team, startingPosition, doScoreBackboard, doPark));
     }
 }

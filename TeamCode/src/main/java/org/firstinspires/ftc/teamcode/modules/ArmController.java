@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.arcrobotics.ftclib.controller.PIDController;
@@ -27,23 +28,25 @@ public class ArmController {
     }
     private Robot2023 robot;
     private Telemetry telemetry;
-    private final double CLAW_OPEN = 0;
-    private final double CLAW_CLOSED = 1;
+    private final double CLAW_OPEN = 0.8;
+    private final double CLAW_CLOSED = 0;
     public final int LINEAR_MIN = 0;
-    public final int LINEAR_MAX = 1400;
+    public final int LINEAR_MAX = 1450;
     public final int LINEAR_INTAKE2 = 200;
+    // these are the left encoder numbers; the right encoder is not up to spec
     public final int FOREARM_MIN = 0;
-    public final int FOREARM_PASSING = 37;
-    public final int FOREARM_MAX = 165;
+    public final int FOREARM_PASSING = FOREARM_MIN;
+    public final int FOREARM_MAX = 190;
     public static final int FOREARM_VERTICAL = 110;
-    public final int FOREARM_PARALELL = 120;
+    public final int FOREARM_PARALELL = 150;
     static final double DEGREES_PER_COREHEX_TICK = 360.0/288.0;
     private ElapsedTime loopTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
 
     // expects to be initted with arm in intake
-    PIDController forearmPID = new PIDController(0.004, 0.01, 0.0007);
-    double gravityGain = 0.1;
-    double frictionGain = 0.1;
+    PIDController forearmPID = new PIDController(0.004, 0.0007, 0.0013); // old: 0.004, 0.01, 0.0007
+    double gravityGain = 0.10; // old: 0.1
+    double frictionGain = 0.11; // old: 0.1
+    final double cgOffset = -50; // degrees off arm
     private ArmLocation armTargetLocation = ArmLocation.Intake1;
     ActionExecutor actionExecutor = new ActionExecutor();
     public void onOpmodeInit(Robot2023 robot, Telemetry telemetry) {
@@ -99,25 +102,25 @@ public class ArmController {
     public void doLoop(Gamepad gamepad1, Gamepad gamepad2){
         if (gamepad2.left_trigger > 0.5){
             //telemetry.log().add("HI open claw");
-            openClaw();
+            closeClaw();
         }
         if (gamepad2.right_trigger > 0.5){
             //telemetry.log().add("HI close claw");
-            closeClaw();
+            openClaw();
         }
         ArmLocation armTargetLocation = getArmLocationFromPositions((int)forearmPID.getSetPoint(), robot.linearExtenderMotor.getTargetPosition());
         ArmLocation armCurrentLocation = getArmLocationFromPositions(robot.leftForearmMotor.getCurrentPosition(), robot.linearExtenderMotor.getCurrentPosition());
-        if (!(locationIsProtected(armTargetLocation) || locationIsProtected(armCurrentLocation)) || gamepad2.start){
+        if (true || !(locationIsProtected(armTargetLocation) || locationIsProtected(armCurrentLocation)) || gamepad2.start){
             doManualLinear(gamepad2, gamepad2.start && gamepad2.left_bumper);
             doManualArm(gamepad2, gamepad2.start && gamepad2.left_bumper);
         }
         if(gamepad2.a){
             armTargetLocation = ArmLocation.Intake1;
             if(!locationIsProtected(armCurrentLocation) || armCurrentLocation == ArmLocation.GeneralProtected){
-                actionExecutor.setAction(new SequentialAction(
-                        goToLinearHeightAction(LINEAR_MAX),
+                actionExecutor.setAction(new ParallelAction(
+                        //goToLinearHeightAction(LINEAR_MAX),
                         goToArmPositionAction(FOREARM_MIN),
-                        new SleepAction(0.5),
+                        //new SleepAction(0.5),
                         goToLinearHeightAction(LINEAR_MIN)
                 ));
             }
@@ -131,10 +134,10 @@ public class ArmController {
             armTargetLocation = ArmLocation.Intake2;
             if(!locationIsProtected(armCurrentLocation) || armCurrentLocation == ArmLocation.GeneralProtected){
                 actionExecutor.setAction(new SequentialAction(
-                        goToLinearHeightAction(LINEAR_MAX),
-                        goToArmPositionAction(FOREARM_MIN),
-                        new SleepAction(0.5),
-                        goToLinearHeightAction(LINEAR_INTAKE2)
+                        //goToLinearHeightAction(LINEAR_MAX),
+                        goToArmPositionAction(FOREARM_MIN)//,
+                        //new SleepAction(0.5),
+                        //goToLinearHeightAction(LINEAR_INTAKE2)
                 ));
             }
             if(armCurrentLocation == ArmLocation.Intake2 || armCurrentLocation == ArmLocation.Intake1){
@@ -145,7 +148,7 @@ public class ArmController {
         }
         if(gamepad2.right_bumper){
             armTargetLocation = ArmLocation.Hang;
-            actionExecutor.setAction(new SequentialAction(
+            actionExecutor.setAction(new ParallelAction(
                     goToLinearHeightAction(LINEAR_MAX),
                     goToArmPositionAction(FOREARM_VERTICAL)
             ));
@@ -153,17 +156,17 @@ public class ArmController {
         if(gamepad2.x){
             armTargetLocation = ArmLocation.Passing;
             actionExecutor.setAction(new SequentialAction(
-                    goToLinearHeightAction(LINEAR_MAX),
-                    goToArmPositionAction(FOREARM_PASSING),
-                    goToLinearHeightAction(LINEAR_MIN)
+                    //goToLinearHeightAction(LINEAR_MAX),
+                    goToArmPositionAction(FOREARM_PASSING)//,
+                    //goToLinearHeightAction(LINEAR_MIN)
             ));
         }
         if(gamepad2.y){
             armTargetLocation = ArmLocation.Score;
             actionExecutor.setAction(new SequentialAction(
-                    goToLinearHeightAction(LINEAR_MAX),
-                    goToArmPositionAction(FOREARM_PARALELL),
-                    goToLinearHeightAction(LINEAR_MIN)
+                    //goToLinearHeightAction(LINEAR_MAX),
+                    goToArmPositionAction(FOREARM_PARALELL)//,
+                    //goToLinearHeightAction(LINEAR_MIN)
             ));
         }
         if(gamepad2.back && gamepad2.start){
@@ -174,6 +177,9 @@ public class ArmController {
             }
             forearmPID.reset();
             forearmPID.setSetPoint(0);
+            robot.linearExtenderMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.linearExtenderMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.linearExtenderMotor.setTargetPosition(0);
         }
         if(gamepad2.back){
             for(DcMotorEx motor: new DcMotorEx[]{robot.leftForearmMotor, robot.rightForearmMotor, robot.linearExtenderMotor}){
@@ -192,7 +198,7 @@ public class ArmController {
         telemetry.addData("forearmT: ", forearmPID.getSetPoint());
         telemetry.addData("linearT: ", robot.linearExtenderMotor.getTargetPosition());
         telemetry.addData("forearmP: ", robot.leftForearmMotor.getPower());
-        telemetry.addData("f compensation: ", gravityGain * -Math.sin(Math.toRadians(ticksToAngle(robot.leftForearmMotor.getCurrentPosition()))));
+        telemetry.addData("f compensation: ", gravityGain * -Math.sin(Math.toRadians(ticksToAngle(robot.leftForearmMotor.getCurrentPosition())+cgOffset)));
         telemetry.addData("current zone:", armCurrentLocation.toString());
         telemetry.addData("target zone: ", armTargetLocation.toString());
         telemetry.addData("arm loop freq: ", Math.round(1/loopTimer.seconds()));
@@ -204,7 +210,7 @@ public class ArmController {
     private void doArmControl() {
         double forearmPower = forearmPID.calculate(robot.leftForearmMotor.getCurrentPosition());
         // gravity compensation is proportional to the sine of the angle, because circle physics
-        forearmPower += gravityGain * -Math.sin(Math.toRadians(ticksToAngle(robot.leftForearmMotor.getCurrentPosition()))); // gravity gain points "up"
+        forearmPower += gravityGain * -Math.sin(Math.toRadians(ticksToAngle(robot.leftForearmMotor.getCurrentPosition())+cgOffset)); // gravity gain points "up"
         forearmPower += frictionGain * Math.signum(forearmPower); // friction gain always points in the direction we're going
         if(forearmPID.atSetPoint()) {
             forearmPower = 0;
@@ -285,36 +291,38 @@ public class ArmController {
             double maxDelta = 0;
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                if(loopTimer.seconds() < 0.01){
-                    delayedLoops++;
-                    while(loopTimer.seconds() < 0.01){
-                        // do nothing
-                    }
-                }
-                double distToTargetSetpoint = targetPosition - forearmPID.getSetPoint();
-                double deltaThisLoop = TICKS_PER_SEC * loopTimer.seconds();
-                armPosTimer.reset();
-                if(deltaThisLoop > maxDelta){
-                    maxDelta = deltaThisLoop;
-                }
-                if (Math.abs(distToTargetSetpoint) < deltaThisLoop){
-                    forearmPID.setSetPoint(targetPosition);
-                    loopsAfterArrival++;
-                } else {
-                    forearmPID.setSetPoint(forearmPID.getSetPoint() + deltaThisLoop * Math.signum(distToTargetSetpoint));
-                    loopsBeforeArrival++;
-                }
-                telemetry.addData("deltaThisLoop: ", deltaThisLoop);
-                telemetry.addData("distToTargetSetpoint: ", distToTargetSetpoint);
-                telemetry.addData("loopsbeforearrival: ", loopsBeforeArrival);
-                telemetry.addData("loopsafterarrival: ", loopsAfterArrival);
-                telemetry.addData("maxdelta", maxDelta);
-                telemetry.addData("looptimer", loopTimer.seconds());
-                telemetry.addData("delayedLoops",delayedLoops);
-                if (forearmPID.atSetPoint() && Math.abs(distToTargetSetpoint) < deltaThisLoop){
-                    telemetry.log().add("Finished GoToArmPositionAction");
-                }
-                return !(forearmPID.atSetPoint() && Math.abs(distToTargetSetpoint) < deltaThisLoop);
+                forearmPID.setSetPoint(targetPosition);
+                return !forearmPID.atSetPoint();
+//                if(loopTimer.seconds() < 0.01){
+//                    delayedLoops++;
+//                    while(loopTimer.seconds() < 0.01){
+//                        // do nothing
+//                    }
+//                }
+//                double distToTargetSetpoint = targetPosition - forearmPID.getSetPoint();
+//                double deltaThisLoop = TICKS_PER_SEC * loopTimer.seconds();
+//                armPosTimer.reset();
+//                if(deltaThisLoop > maxDelta){
+//                    maxDelta = deltaThisLoop;
+//                }
+//                if (Math.abs(distToTargetSetpoint) < deltaThisLoop){
+//                    forearmPID.setSetPoint(targetPosition);
+//                    loopsAfterArrival++;
+//                } else {
+//                    forearmPID.setSetPoint(forearmPID.getSetPoint() + deltaThisLoop * Math.signum(distToTargetSetpoint));
+//                    loopsBeforeArrival++;
+//                }
+//                telemetry.addData("deltaThisLoop: ", deltaThisLoop);
+//                telemetry.addData("distToTargetSetpoint: ", distToTargetSetpoint);
+//                telemetry.addData("loopsbeforearrival: ", loopsBeforeArrival);
+//                telemetry.addData("loopsafterarrival: ", loopsAfterArrival);
+//                telemetry.addData("maxdelta", maxDelta);
+//                telemetry.addData("looptimer", loopTimer.seconds());
+//                telemetry.addData("delayedLoops",delayedLoops);
+//                if (forearmPID.atSetPoint() && Math.abs(distToTargetSetpoint) < deltaThisLoop){
+//                    telemetry.log().add("Finished GoToArmPositionAction");
+//                }
+//                return !(forearmPID.atSetPoint() && Math.abs(distToTargetSetpoint) < deltaThisLoop);
             }
         };
     }
