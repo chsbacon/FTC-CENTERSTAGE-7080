@@ -59,17 +59,17 @@ public class MeepMeepTesting {
     }
 
     private static Action getSequenceForState(RoadRunnerBotEntity myBot, SpikeMarkLocation spikeMarkLocation, Team team, StartingPosition startingPosition) {
-        return FieldPositions.getStraightToScoreFromBack(myBot.getDrive(), StartingPosition.Back, team, spikeMarkLocation);
-        //        Action goToSpikeMark = FieldPositions.getTrajToSpikeMark(myBot.getDrive(), startingPosition, team, spikeMarkLocation);
-//        Action goToPrescorePoint = FieldPositions.getTrajEscapeSpikeMark(myBot.getDrive(), startingPosition, team, spikeMarkLocation);
-//        Action scoreBackboard = FieldPositions.getTrajToScore(myBot.getDrive(), startingPosition, team, spikeMarkLocation);
-//        Action park = FieldPositions.getTrajToPark(myBot.getDrive(), startingPosition, team, spikeMarkLocation, true);
-//        return
-//                new SequentialAction(
-//                        goToSpikeMark,
-//                        goToPrescorePoint,
-//                        scoreBackboard,
-//                        park
-//                );
+        //return FieldPositions.getStraightToScoreFromBack(myBot.getDrive(), StartingPosition.Back, team, spikeMarkLocation);
+        Action goToSpikeMark = FieldPositions.getTrajToSpikeMark(myBot.getDrive(), startingPosition, team, spikeMarkLocation);
+        Action goToPrescorePoint = FieldPositions.getTrajEscapeSpikeMark(myBot.getDrive(), startingPosition, team, spikeMarkLocation, true);
+        Action scoreBackboard = FieldPositions.getTrajToScore(myBot.getDrive(), startingPosition, team, spikeMarkLocation);
+        Action park = FieldPositions.getTrajToPark(myBot.getDrive(), startingPosition, team, spikeMarkLocation, true);
+        return
+                new SequentialAction(
+                        goToSpikeMark,
+                        goToPrescorePoint,
+                        scoreBackboard,
+                        park
+                );
     }
 }

@@ -21,7 +21,7 @@ public class FieldPositions {
         Right
     }
     public static Vector2d getRobotSize(){
-        return new Vector2d(14.5, 14.6);
+        return new Vector2d(18, 15.1);
         // x is forward/back, y is left/right
     }
     public static Pose2d getStartingPose(StartingPosition startingPosition, Team team){
@@ -54,7 +54,7 @@ public class FieldPositions {
                 departureHeading = 0;
                 break;
         }
-        double arrivalHeading = getPurpleScoreArrivalHeading(team, spikeMarkLocation);
+        double arrivalHeading = getPurpleScoreArrivalHeading(team, spikeMarkLocation, startingPosition);
 
         return drive.actionBuilder(getStartingPose(startingPosition, team))
                 .setTangent(departureHeading)
@@ -62,7 +62,7 @@ public class FieldPositions {
                 .build();
     }
 
-    private static double getPurpleScoreArrivalHeading(Team team, SpikeMarkLocation spikeMarkLocation) {
+    private static double getPurpleScoreArrivalHeading(Team team, SpikeMarkLocation spikeMarkLocation, StartingPosition startingPosition) {
         double arrivalHeading = Math.PI;
         switch (spikeMarkLocation){
             case Left:
@@ -78,6 +78,10 @@ public class FieldPositions {
                 arrivalHeading = 0;
                 break;
         }
+//        // special case
+//        if(spikeMarkLocation == SpikeMarkLocation.Left && startingPosition == StartingPosition.Back){
+//            arrivalHeading = 0;
+//        }
         if (team == Team.Red){
             arrivalHeading += Math.PI;
         }
@@ -119,18 +123,19 @@ public class FieldPositions {
 
     // absolute position this time, just for funsies ;P
     public static final Vector2d blueFrontStagePoint = new Vector2d(-12, -24);
-    public static final Vector2d bluePrescorePoint = new Vector2d(-16, 60 - getRobotSize().x / 2);
+    public static final Vector2d bluePrescorePoint = new Vector2d(-12, 60 - getRobotSize().x / 2);
     public static final Vector2d redFrontStagePoint = new Vector2d(12, -24);
-    public static final Vector2d redPrescorePoint = new Vector2d(16, 60 - getRobotSize().x / 2);
+    public static final Vector2d redPrescorePoint = new Vector2d(12, 60 - getRobotSize().x / 2);
     public static final Vector2d blueFrontSecondaryEscapePoint = new Vector2d(-24, -56);
     public static final Vector2d blueBackSecondaryEscapePoint = new Vector2d(-20, 11);
     public static final Vector2d redFrontSecondaryEscapePoint = new Vector2d(24, -56);
     public static final Vector2d redBackSecondaryEscapePoint = new Vector2d(20, 11);
-    public static Action getTrajEscapeSpikeMark(DriveShim drive, StartingPosition startingPosition, Team team, SpikeMarkLocation spikeMarkLocation){
+    public static Action getTrajEscapeSpikeMark(DriveShim drive, StartingPosition startingPosition, Team team, SpikeMarkLocation spikeMarkLocation, boolean goPastBackup){
         Vector2d backupvector = new Vector2d(-5, 0);
-        double backAng = getPurpleScoreArrivalHeading(team, spikeMarkLocation);
+        double backAng = getPurpleScoreArrivalHeading(team, spikeMarkLocation, startingPosition);
         backupvector = new Vector2d(backupvector.x * Math.cos(backAng) - backupvector.y * Math.sin(backAng),backupvector.x * Math.sin(backAng) + backupvector.y * Math.cos(backAng));
         Vector2d zerothTargetPosition = getPurpleScoreTarget(startingPosition, team, spikeMarkLocation).plus(backupvector);
+
         Vector2d firstTargetPosition;
         if (team == Team.Red){
             if (startingPosition == StartingPosition.Front){
@@ -145,24 +150,34 @@ public class FieldPositions {
                 firstTargetPosition = bluePrescorePoint;
             }
         }
-        double departureHeading;
+        double firstDepartureHeading;
         switch (spikeMarkLocation){
             case Left:
-                departureHeading = -Math.PI/2;
+                firstDepartureHeading = -Math.PI/2;
                 break;
             case Center:
-                departureHeading = Math.PI;
+                firstDepartureHeading = Math.PI;
                 break;
             case Right:
-                departureHeading = +Math.PI/2;
+                firstDepartureHeading = +Math.PI/2;
                 break;
             default:
-                departureHeading = 0;
+                firstDepartureHeading = 0;
                 break;
         }
         if (team == Team.Red){
-            departureHeading += Math.PI;
+            firstDepartureHeading += Math.PI;
         }
+        double secondDepartureHeading = firstDepartureHeading;
+        // prevent running into truss by leaving sideways in some cases
+        // this monster of a conditional is selecting the "outside" spike mark locations
+        if(team == Team.Blue && ((startingPosition == StartingPosition.Back && spikeMarkLocation == SpikeMarkLocation.Left)||(startingPosition == StartingPosition.Front && spikeMarkLocation == SpikeMarkLocation.Right))){
+            secondDepartureHeading = 0;
+        }
+        if(team==Team.Red && ((startingPosition == StartingPosition.Front && spikeMarkLocation == SpikeMarkLocation.Left)||(startingPosition == StartingPosition.Back && spikeMarkLocation == SpikeMarkLocation.Right))){
+            secondDepartureHeading = Math.PI;
+        }
+
         Vector2d secondaryEscapePoint = null;
         // secondary escape point needed if starting from front position and spike in center
         // or starting ihn back and spike in blue: left or red: right
@@ -182,19 +197,28 @@ public class FieldPositions {
             secondaryEscapeArrivalHeading = Math.PI;
         }
         Action result;
-        Pose2d startingPose = new Pose2d(getPurpleScoreTarget(startingPosition, team, spikeMarkLocation), getPurpleScoreArrivalHeading(team, spikeMarkLocation)+Math.PI);
+        Pose2d startingPose = new Pose2d(getPurpleScoreTarget(startingPosition, team, spikeMarkLocation), getPurpleScoreArrivalHeading(team, spikeMarkLocation, startingPosition)+Math.PI);
+        if(!goPastBackup){
+            result = drive.actionBuilder(startingPose)
+                    .setTangent(firstDepartureHeading)
+                    .splineTo(zerothTargetPosition, firstDepartureHeading)
+                    .build();
+            return result;
+        }
         if(startingPosition == StartingPosition.Back){
             if(secondaryEscapePoint != null){
                 result = drive.actionBuilder(startingPose)
-                        .setTangent(departureHeading)
-                        .splineTo(zerothTargetPosition, departureHeading)
-                        .splineToLinearHeading(new Pose2d(secondaryEscapePoint, departureHeading), secondaryEscapeArrivalHeading)
+                        .setTangent(firstDepartureHeading)
+                        .splineTo(zerothTargetPosition, firstDepartureHeading)
+                        .setTangent(secondDepartureHeading)
+                        .splineToLinearHeading(new Pose2d(secondaryEscapePoint, firstDepartureHeading), secondaryEscapeArrivalHeading)
                         .splineToLinearHeading(new Pose2d(firstTargetPosition, -Math.PI/2), Math.PI/2)
                         .build();
             } else {
                 result = drive.actionBuilder(startingPose)
-                        .setTangent(departureHeading)
-                        .splineTo(zerothTargetPosition, departureHeading)
+                        .setTangent(firstDepartureHeading)
+                        .splineTo(zerothTargetPosition, firstDepartureHeading)
+                        .setTangent(secondDepartureHeading)
                         .splineToLinearHeading(new Pose2d(firstTargetPosition, -Math.PI/2), Math.PI/2)
                         .build();
             }
@@ -208,29 +232,37 @@ public class FieldPositions {
             }
             if (secondaryEscapePoint != null){
                 result = drive.actionBuilder(startingPose)
-                        .setTangent(departureHeading)
-                        .splineTo(zerothTargetPosition, departureHeading)
-                        .splineToLinearHeading(new Pose2d(secondaryEscapePoint, departureHeading), secondaryEscapeArrivalHeading)
-                        .splineToLinearHeading(new Pose2d(firstTargetPosition, -Math.PI/2), Math.PI/2)
-                        .splineToLinearHeading(new Pose2d(secondTargetPosition, -Math.PI/2), Math.PI/2)
+                        .setTangent(firstDepartureHeading)
+                        .splineTo(zerothTargetPosition, firstDepartureHeading)
+                        .setTangent(secondDepartureHeading)
+                        .splineToLinearHeading(new Pose2d(secondaryEscapePoint, firstDepartureHeading), secondaryEscapeArrivalHeading)
+                        .splineToLinearHeading(new Pose2d(firstTargetPosition, Math.PI/2), Math.PI/2)
+                        .splineToLinearHeading(new Pose2d(secondTargetPosition, Math.PI/2), Math.PI/2)
+                        .turnTo(-Math.PI/2)
                         .build();
             } else {
                 result = drive.actionBuilder(startingPose)
-                        .setTangent(departureHeading)
-                        .splineTo(zerothTargetPosition, departureHeading)
-                        .splineToLinearHeading(new Pose2d(firstTargetPosition, -Math.PI / 2), Math.PI / 2)
-                        .splineToLinearHeading(new Pose2d(secondTargetPosition, -Math.PI / 2), Math.PI / 2)
+                        .setTangent(firstDepartureHeading)
+                        .splineTo(zerothTargetPosition, firstDepartureHeading)
+                        .setTangent(secondDepartureHeading)
+                        .splineToLinearHeading(new Pose2d(firstTargetPosition, Math.PI / 2), Math.PI / 2)
+                        .splineToLinearHeading(new Pose2d(secondTargetPosition, Math.PI / 2), Math.PI / 2)
+                        .turnTo(-Math.PI/2)
                         .build();
             }
         }
         return result;
     }
-    public static final Vector2d blueBackboardCenterScoreTarget = new Vector2d(-36, 60 - getRobotSize().x / 2);
-    public static final Vector2d blueBackboardLeftScoreTarget = new Vector2d(-42, 60 - getRobotSize().x / 2);
-    public static final Vector2d blueBackboardRightScoreTarget = new Vector2d(-30, 60 - getRobotSize().x / 2);
-    public static final Vector2d redBackboardCenterScoreTarget = new Vector2d(36, 60 - getRobotSize().x / 2);
-    public static final Vector2d redBackboardLeftScoreTarget = new Vector2d(30, 60 - getRobotSize().x / 2);
-    public static final Vector2d redBackboardRightScoreTarget = new Vector2d(42, 60 - getRobotSize().x / 2);
+    private static final double scoreXBase = 36;
+    private static final double innerScoreXOffset = 6;
+    private static final double outerScoreXOffset = 6;
+    public static final Vector2d blueBackboardCenterScoreTarget = new Vector2d(-scoreXBase, 60 - getRobotSize().x / 2);
+    public static final Vector2d blueBackboardLeftScoreTarget = new Vector2d(-scoreXBase - outerScoreXOffset, 60 - getRobotSize().x / 2);
+    public static final Vector2d blueBackboardRightScoreTarget = new Vector2d(-scoreXBase + innerScoreXOffset, 60 - getRobotSize().x / 2);
+    public static final Vector2d redBackboardCenterScoreTarget = new Vector2d(scoreXBase, 60 - getRobotSize().x / 2);
+    public static final Vector2d redBackboardLeftScoreTarget = new Vector2d(scoreXBase - innerScoreXOffset, 60 - getRobotSize().x / 2);
+    public static final Vector2d redBackboardRightScoreTarget = new Vector2d(scoreXBase + outerScoreXOffset, 60 - getRobotSize().x / 2);
+
     public static Action getTrajToScore(DriveShim drive, StartingPosition startingPosition, Team team, SpikeMarkLocation spikeMarkLocation) {
         // assume we're starting from the prescore point
 
@@ -311,9 +343,9 @@ public class FieldPositions {
             // some bug in meepmeep/roadrunner means we can't start *exactly* where we stop
             // but starting a ten thousandth of an inch off is fine
             if (team == Team.Red){
-                startingPose = new Pose2d(redPrescorePoint.plus(new Vector2d(0.0001,0.0001)), Math.PI/2);
+                startingPose = new Pose2d(redPrescorePoint.plus(new Vector2d(0.0001,0.0001)), -Math.PI/2);
             } else {
-                startingPose = new Pose2d(bluePrescorePoint.plus(new Vector2d(0.0001,0.0001)), Math.PI/2);
+                startingPose = new Pose2d(bluePrescorePoint.plus(new Vector2d(0.0001,0.0001)), -Math.PI/2);
             }
         }
 
