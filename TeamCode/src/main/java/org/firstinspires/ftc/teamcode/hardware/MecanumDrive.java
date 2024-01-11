@@ -66,14 +66,14 @@ import java.util.*;
 public final class MecanumDrive {
     public static class Params {
         // drive model parameters
-        public double inPerTick = 0.0316622;
-        public double lateralInPerTick = 0.03319502;
-        public double trackWidthTicks = 1015.424427;
+        public double inPerTick = 0.000754716;
+        public double lateralInPerTick = -0.0005655872774290472;
+        public double trackWidthTicks = 2.2634056809448024;
 
         // feedforward parameters (in tick units)
-        public double kS = 0.960801;
-        public double kV = 0.00424555;
-        public double kA = 0.000009;
+        public double kS = 1.1101720981423604;
+        public double kV = 0.00014781741421332427;
+        public double kA = 0.00001;
 
         // path profile parameters (in inches)
         public double maxWheelVel = 50;
@@ -135,8 +135,7 @@ public final class MecanumDrive {
             rightRear = new OverflowEncoder(new RawEncoder(MecanumDrive.this.rightBack));
             rightFront = new OverflowEncoder(new RawEncoder(MecanumDrive.this.rightFront));
 
-            leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
-            leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
+            //leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
 
             lastLeftFrontPos = leftFront.getPositionAndVelocity().position;
             lastLeftRearPos = leftRear.getPositionAndVelocity().position;
@@ -219,7 +218,7 @@ public final class MecanumDrive {
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
-        localizer = new DriveLocalizer();
+        localizer = new ThreeDeadWheelLocalizer(hardwareMap, PARAMS.inPerTick);
 
         FlightRecorder.write("MECANUM_PARAMS", PARAMS);
     }
