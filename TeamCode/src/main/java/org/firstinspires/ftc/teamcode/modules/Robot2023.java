@@ -1,18 +1,9 @@
 package org.firstinspires.ftc.teamcode.modules;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.acmerobotics.roadrunner.Action;
-import com.acmerobotics.roadrunner.ftc.OverflowEncoder;
-import com.acmerobotics.roadrunner.ftc.RawEncoder;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.MotorControlAlgorithm;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -23,21 +14,22 @@ public class Robot2023 {
     LinearOpMode opMode;
     public HardwareMap hardwareMap;
     Servo clawServo;
+    Servo droneServo;
     public DcMotorEx linearExtenderMotor;
     public DcMotorEx rightForearmMotor;
     public DcMotorEx leftForearmMotor;
-    public DcMotorEx intakeMotor;
+    //public DcMotorEx intakeMotor;
     public ArmController armController = null;
     public DriveController driveController = null;
     public AprilTagController aprilTagController = null;
     public TfodController tfodController = null;
     public AutonomousController autonomousController = null;
-    public IntakeController intakeController = null;
+    public DroneController droneController = null;
     MecanumDrive drive;
     Telemetry telemetry;
     WebcamName webcam;
 
-    public Robot2023(LinearOpMode opMode, MecanumDrive drive, boolean doArmController, boolean doDriveController, boolean doAprilTags, boolean doTfod, boolean doAuto, boolean doIntake){
+    public Robot2023(LinearOpMode opMode, MecanumDrive drive, boolean doArmController, boolean doDriveController, boolean doAprilTags, boolean doTfod, boolean doAuto, boolean doDrone){
         this.hardwareMap = opMode.hardwareMap;
         this.telemetry = opMode.telemetry;
         this.drive = drive;
@@ -54,8 +46,8 @@ public class Robot2023 {
             leftForearmMotor = this.hardwareMap.get(DcMotorEx.class, "forearmLeft");
             leftForearmMotor.setDirection(DcMotorEx.Direction.REVERSE);
         }
-        if(doIntake){
-            intakeMotor = this.hardwareMap.get(DcMotorEx.class, "intakeMotor");
+        if(doDrone){
+            droneServo = this.hardwareMap.get(Servo.class, "droneServo");
         }
 
         // controller inits
@@ -74,8 +66,8 @@ public class Robot2023 {
         if (doAuto){
             autonomousController = new AutonomousController();
         }
-        if(doIntake) {
-            intakeController = new IntakeController();
+        if(doDrone) {
+            droneController = new DroneController();
         }
     }
     public Robot2023(LinearOpMode opMode, MecanumDrive drive){
@@ -105,8 +97,8 @@ public class Robot2023 {
                 tfodController.onOpmodeInit(this, this.telemetry, FieldPositions.Team.Blue);
             }
         }
-        if(intakeController != null){
-            intakeController.onOpmodeInit(this, this.telemetry);
+        if(droneController != null){
+            droneController.onOpmodeInit(this, this.telemetry);
         }
     }
     public void doLoop(Gamepad gamepad1, Gamepad gamepad2){
@@ -125,8 +117,8 @@ public class Robot2023 {
         if(autonomousController != null){
             autonomousController.doLoop();
         }
-        if(intakeController != null){
-            intakeController.doLoop(gamepad1, gamepad2);
+        if(droneController != null){
+            droneController.doLoop(gamepad1, gamepad2);
         }
 
     }

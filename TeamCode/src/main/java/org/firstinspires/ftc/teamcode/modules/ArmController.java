@@ -43,10 +43,10 @@ public class ArmController {
     private ElapsedTime loopTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
 
     // expects to be initted with arm in intake
-    PIDController forearmPID = new PIDController(0.004, 0.0007, 0.0013); // old: 0.004, 0.01, 0.0007
-    double gravityGain = 0.10; // old: 0.1
-    double frictionGain = 0.11; // old: 0.1
-    final double cgOffset = -50; // degrees off arm
+    PIDController forearmPID = new PIDController(0.005, 0.0007, 0.0013); // old: 0.004, 0.0007, 0.0013; old old: 0.004, 0.01, 0.0007
+    double gravityGain = 0.1; // old: 0.1; old old: 0.1
+    double frictionGain = 0.1; // old: 0.11; old old: 0.1
+    final double cgOffset = 0; // degrees off arm
     private ArmLocation armTargetLocation = ArmLocation.Intake1;
     ActionExecutor actionExecutor = new ActionExecutor();
     public void onOpmodeInit(Robot2023 robot, Telemetry telemetry) {
@@ -102,11 +102,11 @@ public class ArmController {
     public void doLoop(Gamepad gamepad1, Gamepad gamepad2){
         if (gamepad2.left_trigger > 0.5){
             //telemetry.log().add("HI open claw");
-            closeClaw();
+            openClaw();
         }
         if (gamepad2.right_trigger > 0.5){
             //telemetry.log().add("HI close claw");
-            openClaw();
+            closeClaw();
         }
         ArmLocation armTargetLocation = getArmLocationFromPositions((int)forearmPID.getSetPoint(), robot.linearExtenderMotor.getTargetPosition());
         ArmLocation armCurrentLocation = getArmLocationFromPositions(robot.leftForearmMotor.getCurrentPosition(), robot.linearExtenderMotor.getCurrentPosition());
@@ -130,22 +130,22 @@ public class ArmController {
                 ));
             }
         }
-        if(gamepad2.b){
-            armTargetLocation = ArmLocation.Intake2;
-            if(!locationIsProtected(armCurrentLocation) || armCurrentLocation == ArmLocation.GeneralProtected){
-                actionExecutor.setAction(new SequentialAction(
-                        //goToLinearHeightAction(LINEAR_MAX),
-                        goToArmPositionAction(FOREARM_MIN)//,
-                        //new SleepAction(0.5),
-                        //goToLinearHeightAction(LINEAR_INTAKE2)
-                ));
-            }
-            if(armCurrentLocation == ArmLocation.Intake2 || armCurrentLocation == ArmLocation.Intake1){
-                actionExecutor.setAction(new SequentialAction(
-                        goToLinearHeightAction(LINEAR_INTAKE2)
-                ));
-            }
-        }
+//        if(gamepad2.b){
+//            armTargetLocation = ArmLocation.Intake2;
+//            if(!locationIsProtected(armCurrentLocation) || armCurrentLocation == ArmLocation.GeneralProtected){
+//                actionExecutor.setAction(new SequentialAction(
+//                        //goToLinearHeightAction(LINEAR_MAX),
+//                        goToArmPositionAction(FOREARM_MIN)//,
+//                        //new SleepAction(0.5),
+//                        //goToLinearHeightAction(LINEAR_INTAKE2)
+//                ));
+//            }
+//            if(armCurrentLocation == ArmLocation.Intake2 || armCurrentLocation == ArmLocation.Intake1){
+//                actionExecutor.setAction(new SequentialAction(
+//                        goToLinearHeightAction(LINEAR_INTAKE2)
+//                ));
+//            }
+//        }
         if(gamepad2.right_bumper){
             armTargetLocation = ArmLocation.Hang;
             actionExecutor.setAction(new ParallelAction(
