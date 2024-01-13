@@ -23,7 +23,7 @@ public class FieldPositions {
         Right
     }
     public static Vector2d getRobotSize(){
-        return new Vector2d(18, 15.1);
+        return new Vector2d(16, 15.1);
         // x is forward/back, y is left/right
     }
     public static Pose2d getStartingPose(StartingPosition startingPosition, Team team){
@@ -80,10 +80,10 @@ public class FieldPositions {
                 arrivalHeading = 0;
                 break;
         }
-        // special case
-        if(spikeMarkLocation == SpikeMarkLocation.Left && startingPosition == StartingPosition.Back){
-            arrivalHeading = 0;
-        }
+//        // special case
+//        if(spikeMarkLocation == SpikeMarkLocation.Left && startingPosition == StartingPosition.Back){
+//            arrivalHeading = 0;
+//        }
         if (team == Team.Red){
             arrivalHeading += Math.PI;
         }
