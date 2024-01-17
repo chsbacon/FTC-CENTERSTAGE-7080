@@ -89,17 +89,11 @@ public class AutonomousController {
                     actions.add(new ParallelAction(
                             FieldPositions.getStraightToScoreFromBack(robot.drive, startingPosition, team, spikeMarkLocation),
                             new SequentialAction(
-                                    robot.armController.goToLinearHeightAction(robot.armController.LINEAR_MAX),// lift out of pit
-                                    new SleepAction(0.5),
                                     robot.armController.goToArmPositionAction(140),//position arm to drop
-                                    robot.armController.goToLinearHeightAction(robot.armController.LINEAR_MIN),//lower arm for better accuracy)
                                     new SleepAction(1),
                                     robot.armController.openClawAction(),
                                     new SleepAction(0.5),
-                                    robot.armController.goToLinearHeightAction(robot.armController.LINEAR_MAX),
-                                    robot.armController.goToArmPositionAction(robot.armController.FOREARM_MIN),//go back into intake are
-                                    new SleepAction(0.5),// settle arm motion before entering pit
-                                    robot.armController.goToLinearHeightAction(robot.armController.LINEAR_MIN)// re-enter intake
+                                    robot.armController.goToArmPositionAction(robot.armController.FOREARM_MIN)//go back into intake are
                             )
                     ));
 //                    actions.add(new SequentialAction(
@@ -124,16 +118,11 @@ public class AutonomousController {
                     if (doScoreBackboard) {
                         actions.add(FieldPositions.getTrajToScore(robot.drive, startingPosition, team, spikeMarkLocation));
                         actions.add(new SequentialAction(
-                                robot.armController.goToLinearHeightAction(robot.armController.LINEAR_MAX),// lift out of pit
+                                robot.armController.goToArmPositionAction(140),//position arm to drop
                                 new SleepAction(1),
-                                robot.armController.goToArmPositionAction(robot.armController.FOREARM_PARALELL),//position arm to drop
-                                robot.armController.goToLinearHeightAction(robot.armController.LINEAR_MIN),//lower arm for better accuracy
-                                robot.armController.openClawAction(),// drop pixel
-                                new SleepAction(.5),// make sure claw is fully open
-                                robot.armController.goToLinearHeightAction(robot.armController.LINEAR_MAX),// raise up to clear baseplate on way in
-                                robot.armController.goToArmPositionAction(robot.armController.FOREARM_MIN),//go back into intake are
-                                new SleepAction(3),// settle arm motion before entering pit
-                                robot.armController.goToLinearHeightAction(robot.armController.LINEAR_MIN)// re-enter intake
+                                robot.armController.openClawAction(),
+                                new SleepAction(0.5),
+                                robot.armController.goToArmPositionAction(robot.armController.FOREARM_MIN)//go back into intake are
                         )); // todo: also add arm
                         telemetry.log().add("Added trajToScore");
                     }
