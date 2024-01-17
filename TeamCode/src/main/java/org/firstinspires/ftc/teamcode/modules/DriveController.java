@@ -132,13 +132,15 @@ public class DriveController {
         double angle_magnitude = Math.sqrt(Math.pow(angle_x_component, 2) + Math.pow(angle_y_component, 2));
         boolean shouldDriveNewAngle = angle_magnitude > .2;
         // gamepad x and b allow for fine angle adjustments
+        // holding fast mode (right trigger) makes angle adjustments faster
+        double angleAdjust = (gamepad1.right_trigger >= 0.5) ? .1 : .02;
         if(gamepad1.x && !shouldDriveNewAngle){
-            targetAngle = oldAngleTarget - .02;
+            targetAngle = oldAngleTarget - angleAdjust;
             targetAngle = AngleUnit.normalizeDegrees(targetAngle);
             shouldDriveNewAngle = true;
         }
         if(gamepad1.b && !shouldDriveNewAngle){
-            targetAngle = oldAngleTarget + .02;
+            targetAngle = oldAngleTarget + angleAdjust;
             targetAngle = AngleUnit.normalizeDegrees(targetAngle);
             shouldDriveNewAngle = true;
         }
