@@ -1,14 +1,11 @@
 package org.firstinspires.ftc.teamcode.modules;
 
-import static com.acmerobotics.roadrunner.ftc.Actions.runBlocking;
-
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.SequentialAction;
-import com.acmerobotics.roadrunner.SleepAction;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -19,17 +16,20 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class ArmController {
     public enum ArmLocation {
-        Intake1,// picking up first pixel
-        Intake2,//picking up second pixel
+        Intake,// picking up first pixel
         GeneralProtected, // not in intake but still in protected area
-        Passing,
         Hang, // straight vertical +- a few degrees
         Score // between hang and MAX
     }
     private Robot2023 robot;
     private Telemetry telemetry;
-    private final double CLAW_OPEN = 0.8;
-    private final double CLAW_CLOSED = 0;
+    private final double LEFT_CLAW_OPEN = 0;
+    private final double LEFT_CLAW_CLOSED = 0;
+    private final double RIGHT_CLAW_OPEN = 0;
+    private final double RIGHT_CLAW_CLOSED = 0;
+    private final double WRIST_GROUND_POS = 0;
+    private final double WRIST_PARALLEL_POS = 0;
+    private final double WRIST_DEGREES_PER_POS = 140;
     public final int LINEAR_MIN = 0;
     public final int LINEAR_MAX = 1450;
     public final int LINEAR_INTAKE2 = 200;
@@ -47,7 +47,7 @@ public class ArmController {
     double gravityGain = 0.1; // old: 0.1; old old: 0.1
     double frictionGain = 0.1; // old: 0.11; old old: 0.1
     final double cgOffset = 0; // degrees off arm
-    private ArmLocation armTargetLocation = ArmLocation.Intake1;
+    private ArmLocation armTargetLocation = ArmLocation.Intake;
     ActionExecutor actionExecutor = new ActionExecutor();
     public void onOpmodeInit(Robot2023 robot, Telemetry telemetry) {
         this.robot = robot;
@@ -66,11 +66,17 @@ public class ArmController {
         forearmPID.setTolerance(4);
         forearmPID.setIntegrationBounds(-1000,1000);
     }
-    public void openClaw(){
-        robot.clawServo.setPosition(CLAW_OPEN);
+    public void openLeftClaw(){
+        robot.leftClawServo.setPosition(LEFT_CLAW_OPEN);
     }
-    public void closeClaw(){
-        robot.clawServo.setPosition(CLAW_CLOSED);
+    public void closeLeftClaw(){
+        robot.leftClawServo.setPosition(LEFT_CLAW_CLOSED);
+    }
+    public void openRightClaw(){
+        robot.rightClawServo.setPosition(RIGHT_CLAW_OPEN);
+    }
+    public void closeRightClaw(){
+        robot.rightClawServo.setPosition(RIGHT_CLAW_CLOSED);
     }
     public void enterIntake(){
 
@@ -79,21 +85,41 @@ public class ArmController {
 
     }
 
-    public Action openClawAction(){
+    public Action openLeftClawAction(){
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                openClaw();
+                openLeftClaw();
                 // telemetryPacket.addLine("Claw opened");
                 return false;
             }
         };
     }
-    public Action closeClawAction(){
+    public Action closeLeftClawAction(){
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                closeClaw();
+                closeLeftClaw();
+                // telemetryPacket.addLine("Claw closed");
+                return false;
+            }
+        };
+    }
+    public Action openRightClawAction(){
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                openRightClaw();
+                // telemetryPacket.addLine("Claw opened");
+                return false;
+            }
+        };
+    }
+    public Action closeRightClawAction(){
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                closeRightClaw();
                 // telemetryPacket.addLine("Claw closed");
                 return false;
             }
@@ -101,72 +127,57 @@ public class ArmController {
     }
     public void doLoop(Gamepad gamepad1, Gamepad gamepad2){
         if (gamepad2.left_trigger > 0.5){
-            //telemetry.log().add("HI open claw");
-            openClaw();
+            //telemetry.log().add("HI close claw");
+            closeLeftClaw();
         }
         if (gamepad2.right_trigger > 0.5){
             //telemetry.log().add("HI close claw");
-            closeClaw();
+            closeRightClaw();
+        }
+        if (gamepad2.left_bumper){
+            //telemetry.log().add("HI open claw");
+            openLeftClaw();
+        }
+        if (gamepad2.right_bumper){
+            //telemetry.log().add("HI open claw");
+            openRightClaw();
         }
         ArmLocation armTargetLocation = getArmLocationFromPositions((int)forearmPID.getSetPoint(), robot.linearExtenderMotor.getTargetPosition());
         ArmLocation armCurrentLocation = getArmLocationFromPositions(robot.leftForearmMotor.getCurrentPosition(), robot.linearExtenderMotor.getCurrentPosition());
-        if (true || !(locationIsProtected(armTargetLocation) || locationIsProtected(armCurrentLocation)) || gamepad2.start){
-            doManualLinear(gamepad2, gamepad2.start && gamepad2.left_bumper);
-            doManualArm(gamepad2, gamepad2.start && gamepad2.left_bumper);
-        }
+
+        doManualLinear(gamepad2, gamepad2.start && gamepad2.left_bumper);
+        doManualArm(gamepad2, gamepad2.start && gamepad2.left_bumper);
+
         if(gamepad2.a){
-            armTargetLocation = ArmLocation.Intake1;
-            if(!locationIsProtected(armCurrentLocation) || armCurrentLocation == ArmLocation.GeneralProtected){
+            armTargetLocation = ArmLocation.Intake;
                 actionExecutor.setAction(new ParallelAction(
                         //goToLinearHeightAction(LINEAR_MAX),
                         goToArmPositionAction(FOREARM_MIN),
                         //new SleepAction(0.5),
                         goToLinearHeightAction(LINEAR_MIN)
                 ));
-            }
-            if(armCurrentLocation == ArmLocation.Intake2 || armCurrentLocation == ArmLocation.Intake1){
-                actionExecutor.setAction(new SequentialAction(
-                        goToLinearHeightAction(LINEAR_MIN)
-                ));
-            }
         }
-//        if(gamepad2.b){
-//            armTargetLocation = ArmLocation.Intake2;
-//            if(!locationIsProtected(armCurrentLocation) || armCurrentLocation == ArmLocation.GeneralProtected){
-//                actionExecutor.setAction(new SequentialAction(
-//                        //goToLinearHeightAction(LINEAR_MAX),
-//                        goToArmPositionAction(FOREARM_MIN)//,
-//                        //new SleepAction(0.5),
-//                        //goToLinearHeightAction(LINEAR_INTAKE2)
-//                ));
-//            }
-//            if(armCurrentLocation == ArmLocation.Intake2 || armCurrentLocation == ArmLocation.Intake1){
-//                actionExecutor.setAction(new SequentialAction(
-//                        goToLinearHeightAction(LINEAR_INTAKE2)
-//                ));
-//            }
-//        }
-        if(gamepad2.right_bumper){
+        if(gamepad2.x){
             armTargetLocation = ArmLocation.Hang;
             actionExecutor.setAction(new ParallelAction(
                     goToLinearHeightAction(LINEAR_MAX),
                     goToArmPositionAction(FOREARM_VERTICAL)
             ));
         }
-        if(gamepad2.x){
-            armTargetLocation = ArmLocation.Passing;
-            actionExecutor.setAction(new SequentialAction(
+        if(gamepad2.b){
+            armTargetLocation = ArmLocation.Score;
+            actionExecutor.setAction(new ParallelAction(
                     //goToLinearHeightAction(LINEAR_MAX),
-                    goToArmPositionAction(FOREARM_PASSING)//,
-                    //goToLinearHeightAction(LINEAR_MIN)
+                    goToArmPositionAction(FOREARM_PARALELL),
+                    goToLinearHeightAction(LINEAR_MIN)
             ));
         }
         if(gamepad2.y){
             armTargetLocation = ArmLocation.Score;
-            actionExecutor.setAction(new SequentialAction(
+            actionExecutor.setAction(new ParallelAction(
                     //goToLinearHeightAction(LINEAR_MAX),
-                    goToArmPositionAction(FOREARM_PARALELL)//,
-                    //goToLinearHeightAction(LINEAR_MIN)
+                    goToArmPositionAction(FOREARM_PARALELL),
+                    goToLinearHeightAction(1000)
             ));
         }
         if(gamepad2.back && gamepad2.start){
@@ -181,6 +192,8 @@ public class ArmController {
             robot.linearExtenderMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             robot.linearExtenderMotor.setTargetPosition(0);
         }
+
+        doArmControl();
         if(gamepad2.back){
             for(DcMotorEx motor: new DcMotorEx[]{robot.leftForearmMotor, robot.rightForearmMotor, robot.linearExtenderMotor}){
                 motor.setPower(0);
@@ -188,7 +201,6 @@ public class ArmController {
         } else {
             robot.linearExtenderMotor.setPower(1);
         }
-        doArmControl();
 
         actionExecutor.doLoop();
         telemetry.addData("Forearm at target: ", forearmPID.atSetPoint());
@@ -218,24 +230,22 @@ public class ArmController {
         }
         forearmPower = clamp(forearmPower, -1, 1);
         setForearmMotorPowers(forearmPower);
+
+        robot.clawWristServo.setPosition(getServoPositionForArmAngle(ticksToAngle(robot.leftForearmMotor.getCurrentPosition()))); // put wrist servo at correct angle
     }
     public static double ticksToAngle(double ticks){
         return (ticks - FOREARM_VERTICAL) * DEGREES_PER_COREHEX_TICK;
     }
 
     public boolean locationIsProtected(ArmLocation armLocation){
-        return armLocation == ArmLocation.GeneralProtected || armLocation == ArmLocation.Intake1 || armLocation == ArmLocation.Intake2;
+        return armLocation == ArmLocation.GeneralProtected || armLocation == ArmLocation.Intake;
     }
     public ArmLocation getArmLocationFromPositions(int forearmPosition, int linearPosition){
         final int FUDGE_FACTOR = 10;
-        if (linearPosition < LINEAR_MIN + FUDGE_FACTOR && forearmPosition < FOREARM_MIN + FUDGE_FACTOR){
-            return ArmLocation.Intake1;
-        } else if (linearPosition < LINEAR_INTAKE2 + FUDGE_FACTOR && forearmPosition < FOREARM_MIN + FUDGE_FACTOR){
-            return ArmLocation.Intake2;
-        } else if (forearmPosition < FOREARM_PASSING - 10) {
+        if (forearmPosition < FOREARM_MIN + FUDGE_FACTOR){
+            return ArmLocation.Intake;
+        } else if (forearmPosition < FOREARM_VERTICAL - 5) {
             return ArmLocation.GeneralProtected;
-        } else if (forearmPosition < FOREARM_PASSING + 10){
-            return ArmLocation.Passing;
         } else if (forearmPosition < FOREARM_VERTICAL + 5){
             return ArmLocation.Hang;
         } else {
@@ -284,48 +294,25 @@ public class ArmController {
     public Action goToArmPositionAction(int targetPosition){
         final double TICKS_PER_SEC = 100;
         return new Action() {
-            ElapsedTime armPosTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-            int loopsBeforeArrival = 0;
-            int loopsAfterArrival = 0;
-            int delayedLoops = 0;
-            double maxDelta = 0;
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 forearmPID.setSetPoint(targetPosition);
                 return !forearmPID.atSetPoint();
-//                if(loopTimer.seconds() < 0.01){
-//                    delayedLoops++;
-//                    while(loopTimer.seconds() < 0.01){
-//                        // do nothing
-//                    }
-//                }
-//                double distToTargetSetpoint = targetPosition - forearmPID.getSetPoint();
-//                double deltaThisLoop = TICKS_PER_SEC * loopTimer.seconds();
-//                armPosTimer.reset();
-//                if(deltaThisLoop > maxDelta){
-//                    maxDelta = deltaThisLoop;
-//                }
-//                if (Math.abs(distToTargetSetpoint) < deltaThisLoop){
-//                    forearmPID.setSetPoint(targetPosition);
-//                    loopsAfterArrival++;
-//                } else {
-//                    forearmPID.setSetPoint(forearmPID.getSetPoint() + deltaThisLoop * Math.signum(distToTargetSetpoint));
-//                    loopsBeforeArrival++;
-//                }
-//                telemetry.addData("deltaThisLoop: ", deltaThisLoop);
-//                telemetry.addData("distToTargetSetpoint: ", distToTargetSetpoint);
-//                telemetry.addData("loopsbeforearrival: ", loopsBeforeArrival);
-//                telemetry.addData("loopsafterarrival: ", loopsAfterArrival);
-//                telemetry.addData("maxdelta", maxDelta);
-//                telemetry.addData("looptimer", loopTimer.seconds());
-//                telemetry.addData("delayedLoops",delayedLoops);
-//                if (forearmPID.atSetPoint() && Math.abs(distToTargetSetpoint) < deltaThisLoop){
-//                    telemetry.log().add("Finished GoToArmPositionAction");
-//                }
-//                return !(forearmPID.atSetPoint() && Math.abs(distToTargetSetpoint) < deltaThisLoop);
             }
         };
     }
+
+    private double getServoPositionForArmAngle(double armAngle) {
+        if(armAngle < 10){
+            // be parallel to ground if it's possible we're approaching it at speed
+            return WRIST_GROUND_POS;
+        }
+        // the goal from here on is to keep the servo at an angle of 60 degrees relative to the ground
+        double targetServoAngle = 150 - armAngle; // from alternate interior angles minus 30 degree offset
+        double targetServoPosition = targetServoAngle / WRIST_DEGREES_PER_POS + WRIST_PARALLEL_POS;
+        return targetServoPosition;
+    }
+
     private double clamp(double val, double min, double max){
         return Math.max(min, Math.min(max, val));
     }

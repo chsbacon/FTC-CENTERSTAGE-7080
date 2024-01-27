@@ -54,7 +54,8 @@ public class AutonomousController {
     public void onOpmodeInit(Robot2023 robot, Telemetry telemetry){
         this.robot = robot;
         this.telemetry = telemetry;
-        robot.armController.closeClaw();
+        robot.armController.closeLeftClaw();
+        robot.armController.closeRightClaw();
     }
     public void doLoop(){
         switch (autoState){
@@ -91,7 +92,7 @@ public class AutonomousController {
                             new SequentialAction(
                                     robot.armController.goToArmPositionAction(140),//position arm to drop
                                     new SleepAction(1),
-                                    robot.armController.openClawAction(),
+                                    robot.armController.openRightClawAction(),
                                     new SleepAction(0.5),
                                     robot.armController.goToArmPositionAction(robot.armController.FOREARM_MIN)//go back into intake are
                             )
@@ -120,7 +121,7 @@ public class AutonomousController {
                         actions.add(new SequentialAction(
                                 robot.armController.goToArmPositionAction(140),//position arm to drop
                                 new SleepAction(1),
-                                robot.armController.openClawAction(),
+                                robot.armController.openRightClawAction(),
                                 new SleepAction(0.5),
                                 robot.armController.goToArmPositionAction(robot.armController.FOREARM_MIN)//go back into intake are
                         )); // todo: also add arm

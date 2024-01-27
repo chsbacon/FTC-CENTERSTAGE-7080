@@ -24,7 +24,7 @@ public final class RandomActionsAuto extends LinearOpMode {
         robot = new Robot2023(this, drive);
         armController = new ArmController();
         armController.onOpmodeInit(robot, telemetry);
-        Actions.runBlocking(armController.closeClawAction());
+        Actions.runBlocking(armController.closeLeftClawAction());
         ActionExecutor actionExecutor = new ActionExecutor();
         waitForStart();
         Action getToBoard = FieldPositions.getTrajToSpikeMark(drive, FieldPositions.StartingPosition.Front, FieldPositions.Team.Blue, Center);

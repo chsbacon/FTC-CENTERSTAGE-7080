@@ -6,6 +6,7 @@ import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.hardware.MecanumDrive;
@@ -13,6 +14,7 @@ import org.firstinspires.ftc.teamcode.modules.ArmController;
 import org.firstinspires.ftc.teamcode.modules.Robot2023;
 
 @Autonomous()
+@Disabled()
 public final class RightBluePark extends LinearOpMode {
     private ArmController armController;
     private Robot2023 robot;
@@ -22,7 +24,7 @@ public final class RightBluePark extends LinearOpMode {
         robot = new Robot2023(this, drive);
         armController = new ArmController();
         armController.onOpmodeInit(robot, telemetry);
-        Actions.runBlocking(armController.closeClawAction());
+        //Actions.runBlocking(armController.closeClawAction());
         waitForStart();
         Action getToBoard = drive.actionBuilder(drive.pose)
                 .waitSeconds(3)
@@ -40,7 +42,7 @@ public final class RightBluePark extends LinearOpMode {
         Actions.runBlocking(
                 new SequentialAction(
                     getToBoard,
-                        armController.openClawAction(),
+                        //armController.openClawAction(),
                         goPark
                 )
         );

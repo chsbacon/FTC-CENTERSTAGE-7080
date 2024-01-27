@@ -13,7 +13,9 @@ import org.firstinspires.ftc.teamcode.hardware.MecanumDrive;
 public class Robot2023 {
     LinearOpMode opMode;
     public HardwareMap hardwareMap;
-    Servo clawServo;
+    Servo leftClawServo;
+    Servo rightClawServo;
+    Servo clawWristServo;
     Servo droneServo;
     public DcMotorEx linearExtenderMotor;
     public DcMotorEx rightForearmMotor;
@@ -38,7 +40,9 @@ public class Robot2023 {
             this.webcam = hardwareMap.get(WebcamName.class, "Webcam1");
         }
         if(doArmController) {
-            clawServo = this.hardwareMap.get(Servo.class, "clawServo");
+            leftClawServo = this.hardwareMap.get(Servo.class, "leftClawServo");
+            rightClawServo = this.hardwareMap.get(Servo.class, "rightClawServo");
+            clawWristServo = this.hardwareMap.get(Servo.class, "clawWristServo");
             linearExtenderMotor = this.hardwareMap.get(DcMotorEx.class, "linearExtender");
             linearExtenderMotor.setDirection(DcMotorEx.Direction.FORWARD);
             rightForearmMotor = this.hardwareMap.get(DcMotorEx.class, "forearmRight");
