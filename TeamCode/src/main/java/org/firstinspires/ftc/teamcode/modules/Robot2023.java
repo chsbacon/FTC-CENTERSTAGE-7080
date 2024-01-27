@@ -13,10 +13,10 @@ import org.firstinspires.ftc.teamcode.hardware.MecanumDrive;
 public class Robot2023 {
     LinearOpMode opMode;
     public HardwareMap hardwareMap;
-    Servo leftClawServo;
-    Servo rightClawServo;
-    Servo clawWristServo;
-    Servo droneServo;
+    public Servo leftClawServo;
+    public Servo rightClawServo;
+    public Servo clawWristServo;
+    public Servo droneServo;
     public DcMotorEx linearExtenderMotor;
     public DcMotorEx rightForearmMotor;
     public DcMotorEx leftForearmMotor;
