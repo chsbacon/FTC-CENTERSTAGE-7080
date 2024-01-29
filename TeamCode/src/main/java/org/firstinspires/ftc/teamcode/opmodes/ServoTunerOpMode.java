@@ -16,6 +16,10 @@ public class ServoTunerOpMode extends LinearOpMode {
         Robot2023 robot = new Robot2023(this, drive, true, false, false, false, false, true);
         waitForStart();
         Servo[] servos = {robot.leftClawServo, robot.rightClawServo, robot.clawWristServo, robot.droneServo};
+        String[] names = {"leftClawServo", "rightClawServo", "clawWristServo", "droneServo"};
+        for (Servo servo: servos) {
+            servo.setPosition(0.5);
+        }
         int selectedServoIndex = 0;
         while (opModeIsActive()){
             // dpad left/right to select servo
@@ -53,13 +57,13 @@ public class ServoTunerOpMode extends LinearOpMode {
                 sleep(200);
             }
 
-            // start to set servo to 0
+            // start to set servo to 0.5
             if (gamepad1.start){
-                servos[selectedServoIndex].setPosition(0);
+                servos[selectedServoIndex].setPosition(0.5);
                 sleep(200);
             }
 
-            telemetry.addData("Selected Servo", servos[selectedServoIndex].getDeviceName());
+            telemetry.addData("Selected Servo", names[selectedServoIndex]);
             telemetry.addData("Position", servos[selectedServoIndex].getPosition());
             telemetry.update();
             idle();

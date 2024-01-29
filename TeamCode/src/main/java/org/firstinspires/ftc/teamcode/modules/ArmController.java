@@ -23,13 +23,13 @@ public class ArmController {
     }
     private Robot2023 robot;
     private Telemetry telemetry;
-    private final double LEFT_CLAW_OPEN = 0;
+    private final double LEFT_CLAW_OPEN = 0.3;
     private final double LEFT_CLAW_CLOSED = 0;
-    private final double RIGHT_CLAW_OPEN = 0;
-    private final double RIGHT_CLAW_CLOSED = 0;
-    private final double WRIST_GROUND_POS = 0;
+    private final double RIGHT_CLAW_OPEN = 0.7;
+    private final double RIGHT_CLAW_CLOSED = 1;
+    private final double WRIST_GROUND_POS = 0.17;
     private final double WRIST_PARALLEL_POS = 0;
-    private final double WRIST_DEGREES_PER_POS = 140;
+    private final double WRIST_DEGREES_PER_POS = 258; // empirical data
     public final int LINEAR_MIN = 0;
     public final int LINEAR_MAX = 1450;
     public final int LINEAR_INTAKE2 = 200;
