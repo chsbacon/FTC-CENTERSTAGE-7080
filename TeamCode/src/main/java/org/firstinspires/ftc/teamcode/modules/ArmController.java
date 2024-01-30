@@ -23,15 +23,15 @@ public class ArmController {
     }
     private Robot2023 robot;
     private Telemetry telemetry;
-    private final double LEFT_CLAW_OPEN = 0.3;
+    private final double LEFT_CLAW_OPEN = 0.2;
     private final double LEFT_CLAW_CLOSED = 0;
-    private final double RIGHT_CLAW_OPEN = 0.7;
+    private final double RIGHT_CLAW_OPEN = 0.8;
     private final double RIGHT_CLAW_CLOSED = 1;
     private final double WRIST_GROUND_POS = 0.17;
     private final double WRIST_PARALLEL_POS = 0;
     private final double WRIST_DEGREES_PER_POS = 258; // empirical data
     public final int LINEAR_MIN = 0;
-    public final int LINEAR_MAX = 1450;
+    public final int LINEAR_MAX = 2500;
     public final int LINEAR_INTAKE2 = 200;
     // these are the left encoder numbers; the right encoder is not up to spec
     public final int FOREARM_MIN = 0;
@@ -308,7 +308,7 @@ public class ArmController {
             return WRIST_GROUND_POS;
         }
         // the goal from here on is to keep the servo at an angle of 60 degrees relative to the ground
-        double targetServoAngle = 150 - armAngle; // from alternate interior angles minus 30 degree offset
+        double targetServoAngle = 200 - armAngle; // from alternate interior angles plus 30 degree offset, minus 10 degree slop
         double targetServoPosition = targetServoAngle / WRIST_DEGREES_PER_POS + WRIST_PARALLEL_POS;
         return targetServoPosition;
     }

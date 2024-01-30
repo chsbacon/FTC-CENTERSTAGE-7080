@@ -9,7 +9,7 @@ public class LinearEncoderReader extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         DcMotorEx theMotor = hardwareMap.get(DcMotorEx.class, "linearExtender");
-        theMotor.setDirection(DcMotorEx.Direction.REVERSE);
+        //theMotor.setDirection(DcMotorEx.Direction.REVERSE);
         waitForStart();
         while (opModeIsActive()){
             telemetry.addData("encoder", theMotor.getCurrentPosition());
