@@ -33,23 +33,20 @@ public class AutonomousController {
         RunningActions,
         Finished
     }
-    private FieldPositions.StartingPosition startingPosition;
-    public FieldPositions.Team team;
+    private KookyClawTrajectories.StartingPosition startingPosition;
+    public KookyClawTrajectories.Team team;
     private boolean doScoreBackboard;
     private boolean doPark;
     private boolean doEarlyScore;
     private AutoState autoState = AutoState.NotStarted;
     private Robot2023 robot;
     private Telemetry telemetry;
-    private FieldPositions.SpikeMarkLocation spikeMarkLocation;
+    private KookyClawTrajectories.SpikeMarkLocation spikeMarkLocation;
     ActionExecutor actionExecutor = new ActionExecutor();
-    public void setSettings(FieldPositions.StartingPosition startingPosition, FieldPositions.Team team, boolean doScoreBackboard, boolean doPark, boolean doEarlyScore){
+    public void setSettings(KookyClawTrajectories.StartingPosition startingPosition, KookyClawTrajectories.Team team){
         this.startingPosition = startingPosition;
         this.team = team;
-        this.doScoreBackboard = doScoreBackboard;
-        this.doPark = doPark;
         this.autoState = AutoState.NotStarted;
-        this.doEarlyScore = doEarlyScore;
     }
     public void onOpmodeInit(Robot2023 robot, Telemetry telemetry){
         this.robot = robot;
@@ -71,68 +68,24 @@ public class AutonomousController {
                     // with of screen is 640, so have the windows be each third of the screen
                     if(lastX < 640/3){
                         // left spike mark
-                        spikeMarkLocation = FieldPositions.SpikeMarkLocation.Left;
+                        spikeMarkLocation = KookyClawTrajectories.SpikeMarkLocation.Left;
                     } else if (lastX < 640*2/3){
                         // center spike mark
-                        spikeMarkLocation = FieldPositions.SpikeMarkLocation.Center;
+                        spikeMarkLocation = KookyClawTrajectories.SpikeMarkLocation.Center;
                     } else {
                         // right spike mark
-                        spikeMarkLocation = FieldPositions.SpikeMarkLocation.Right;
+                        spikeMarkLocation = KookyClawTrajectories.SpikeMarkLocation.Right;
                     }
                     telemetry.log().add("LastX is " + robot.tfodController.lastX + ", so spike mark location is " + spikeMarkLocation.toString());
                 } else {
                     // if the tfod isn't running, assume we're center spike mark
-                    spikeMarkLocation = FieldPositions.SpikeMarkLocation.Center;
+                    spikeMarkLocation = KookyClawTrajectories.SpikeMarkLocation.Center;
                     telemetry.log().add("Cound not get TFOD controller, assuming center mark");
                 }
-                // now that we know where we're headed, set up the actions
-                if(doEarlyScore){
-                    actions.add(new ParallelAction(
-                            FieldPositions.getStraightToScoreFromBack(robot.drive, startingPosition, team, spikeMarkLocation),
-                            new SequentialAction(
-                                    robot.armController.goToArmPositionAction(140),//position arm to drop
-                                    new SleepAction(1),
-                                    robot.armController.openRightClawAction(),
-                                    new SleepAction(0.5),
-                                    robot.armController.goToArmPositionAction(robot.armController.FOREARM_MIN)//go back into intake are
-                            )
-                    ));
-//                    actions.add(new SequentialAction(
-//
-//                    ));
-                    if(doPark) {
-                        actions.add(FieldPositions.getTrajToPark(robot.drive, startingPosition, team, spikeMarkLocation, true));
-                    }
-                } else {
-                    // first, score the purple pixel on the correct spike mark
-                    actions.add(FieldPositions.getTrajToSpikeMark(robot.drive, startingPosition, team, spikeMarkLocation));
-                    telemetry.log().add("Added trajToSpikeMark");
-                    // then, if we're parking and/or scoring, go to the prescore point
-                    if (doPark || doScoreBackboard) {
-                        actions.add(FieldPositions.getTrajEscapeSpikeMark(robot.drive, startingPosition, team, spikeMarkLocation, true));
-                        telemetry.log().add("Added trajEscapeSpikeMark");
-                    } else {
-                        actions.add(FieldPositions.getTrajEscapeSpikeMark(robot.drive, startingPosition, team, spikeMarkLocation, false));
-                        telemetry.log().add("Added backupTrajEscapeSpikeMark");
-                    }
-                    // then, if we're scoring, go to the backboard and score
-                    if (doScoreBackboard) {
-                        actions.add(FieldPositions.getTrajToScore(robot.drive, startingPosition, team, spikeMarkLocation));
-                        actions.add(new SequentialAction(
-                                robot.armController.goToArmPositionAction(140),//position arm to drop
-                                new SleepAction(1),
-                                robot.armController.openRightClawAction(),
-                                new SleepAction(0.5),
-                                robot.armController.goToArmPositionAction(robot.armController.FOREARM_MIN)//go back into intake are
-                        )); // todo: also add arm
-                        telemetry.log().add("Added trajToScore");
-                    }
-                    // then, if we're parking, go to the parking spot
-                    if (doPark) {
-                        actions.add(FieldPositions.getTrajToPark(robot.drive, startingPosition, team, spikeMarkLocation, doScoreBackboard));
-                        telemetry.log().add("Added trajToPark");
-                    }
-                }
+
+                actions.add(KookyClawTrajectories.getPurplePixelTraj(robot.drive, startingPosition, team, spikeMarkLocation, robot.armController.openLeftClawAction()));
+                actions.add(KookyClawTrajectories.getPurpleOnlyFinishTraj(robot.drive, startingPosition, team, spikeMarkLocation));
+
                 // now, construct into one big SequentialAction
                 Action theAction = new SequentialAction(actions);
                 // and set it into the robot

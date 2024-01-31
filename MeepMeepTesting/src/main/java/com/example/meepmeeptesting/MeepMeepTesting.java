@@ -35,10 +35,10 @@ public class MeepMeepTesting {
 
         // run sequence for state for every combination of spike mark location, team, and starting position
         ArrayList<Action> actions = new ArrayList<Action>();
-        for (Team team : Team.values()){
-            for (StartingPosition startingPosition : StartingPosition.values()){
-                for (SpikeMarkLocation spikeMarkLocation : SpikeMarkLocation.values()){
-                    actions.add(getSequenceForState(myBot, spikeMarkLocation, team, startingPosition));
+        for (KookyClawTrajectories.Team team : KookyClawTrajectories.Team.values()){
+            for (KookyClawTrajectories.StartingPosition startingPosition : KookyClawTrajectories.StartingPosition.values()){
+                for (KookyClawTrajectories.SpikeMarkLocation spikeMarkLocation : KookyClawTrajectories.SpikeMarkLocation.values()){
+                    actions.add(getSequenceForKooky(myBot, spikeMarkLocation, team, startingPosition));
                 }
             }
         }
@@ -56,6 +56,18 @@ public class MeepMeepTesting {
                 .setBackgroundAlpha(0.95f)
                 .addEntity(myBot)
                 .start();
+    }
+
+    private static Action getSequenceForKooky(RoadRunnerBotEntity myBot, KookyClawTrajectories.SpikeMarkLocation spikeMarkLocation, KookyClawTrajectories.Team team, KookyClawTrajectories.StartingPosition startingPosition) {
+        //return FieldPositions.getStraightToScoreFromBack(myBot.getDrive(), StartingPosition.Back, team, spikeMarkLocation);
+        Action purplePixelTraj = KookyClawTrajectories.getPurplePixelTraj(myBot.getDrive(), startingPosition, team, spikeMarkLocation, new SequentialAction());
+        Action finishTraj = KookyClawTrajectories.getPurpleOnlyFinishTraj(myBot.getDrive(), startingPosition, team, spikeMarkLocation);
+
+        return
+                new SequentialAction(
+                        purplePixelTraj,
+                        finishTraj
+                );
     }
 
     private static Action getSequenceForState(RoadRunnerBotEntity myBot, SpikeMarkLocation spikeMarkLocation, Team team, StartingPosition startingPosition) {
