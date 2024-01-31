@@ -6,24 +6,24 @@ import com.qualcomm.robotcore.eventloop.opmode.OpModeRegistrar;
 
 import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta;
 import org.firstinspires.ftc.teamcode.hardware.MecanumDrive;
-import org.firstinspires.ftc.teamcode.modules.FieldPositions;
+import org.firstinspires.ftc.teamcode.modules.KookyClawTrajectories;
 import org.firstinspires.ftc.teamcode.modules.Robot2023;
 
 public class AutoOpModes {
     @OpModeRegistrar
     public static void registerMyOpModes(OpModeManager manager) {
         // register a permutation for every possible combination of starting position, team, and whether or not to score the backboard and park
-        for (FieldPositions.Team team : FieldPositions.Team.values()){
-            for (FieldPositions.StartingPosition startingPosition : FieldPositions.StartingPosition.values()){
-                for (boolean doScoreBackboard : new boolean[]{true, false}){
-                    for (boolean doPark : new boolean[]{true, false}){
-                        registerPermutation(manager, team, startingPosition, doScoreBackboard, doPark);
-                    }
-                }
+        for (KookyClawTrajectories.Team team : KookyClawTrajectories.Team.values()){
+            for (KookyClawTrajectories.StartingPosition startingPosition : KookyClawTrajectories.StartingPosition.values()){
+                //for (boolean doScoreBackboard : new boolean[]{true, false}){
+                    //for (boolean doPark : new boolean[]{true, false}){
+                        registerPermutation(manager, team, startingPosition, false, false); //doScoreBackboard, doPark);
+                    //}
+                //}
             }
         }
     }
-    public static void registerPermutation(OpModeManager manager, FieldPositions.Team team, FieldPositions.StartingPosition startingPosition, boolean doScoreBackboard, boolean doPark){
+    public static void registerPermutation(OpModeManager manager, KookyClawTrajectories.Team team, KookyClawTrajectories.StartingPosition startingPosition, boolean doScoreBackboard, boolean doPark){
         String group = team.toString()+startingPosition.toString();
         String name = group;
         if(doScoreBackboard){
@@ -47,11 +47,11 @@ public class AutoOpModes {
 
 class AutonomousOpMode extends LinearOpMode {
     Robot2023 robot;
-    final FieldPositions.Team team;
-    final FieldPositions.StartingPosition startingPosition;
+    final KookyClawTrajectories.Team team;
+    final KookyClawTrajectories.StartingPosition startingPosition;
     final boolean doScoreBackboard;
     final boolean doPark;
-    AutonomousOpMode(FieldPositions.Team team, FieldPositions.StartingPosition startingPosition, boolean doScoreBackboard, boolean doPark){
+    AutonomousOpMode(KookyClawTrajectories.Team team, KookyClawTrajectories.StartingPosition startingPosition, boolean doScoreBackboard, boolean doPark){
         this.team = team;
         this.startingPosition = startingPosition;
         this.doScoreBackboard = doScoreBackboard;
@@ -59,8 +59,8 @@ class AutonomousOpMode extends LinearOpMode {
     }
     @Override
     public void runOpMode() throws InterruptedException {
-        robot = new Robot2023(this, new MecanumDrive(hardwareMap, FieldPositions.getStartingPose(startingPosition, team)), true, false, false, true, true, true);
-        robot.autonomousController.setSettings(startingPosition, team, doScoreBackboard, doPark, false);
+        robot = new Robot2023(this, new MecanumDrive(hardwareMap, KookyClawTrajectories.getStartingPose(startingPosition, team)), true, false, false, true, true, true);
+        robot.autonomousController.setSettings(startingPosition, team);
         robot.onOpmodeInit();
         waitForStart();
 

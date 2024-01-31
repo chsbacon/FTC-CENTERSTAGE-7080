@@ -7,8 +7,8 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 public class DroneController {
     private Robot2023 robot;
     private Telemetry telemetry;
-    private final double DRONE_HELD = 0.35;
-    private final double DRONE_RELEASED = 0;
+    private final double DRONE_HELD = 1;
+    private final double DRONE_RELEASED = 0.6;
     public void onOpmodeInit(Robot2023 robot, Telemetry telemetry){
         this.robot = robot;
         this.telemetry = telemetry;

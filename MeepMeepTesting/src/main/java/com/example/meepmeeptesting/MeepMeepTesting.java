@@ -1,18 +1,14 @@
 package com.example.meepmeeptesting;
 
 import com.acmerobotics.roadrunner.Action;
-import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
-import com.acmerobotics.roadrunner.SleepAction;
-import com.acmerobotics.roadrunner.Vector2d;
 import com.noahbres.meepmeep.MeepMeep;
 import com.noahbres.meepmeep.roadrunner.DefaultBotBuilder;
 import com.noahbres.meepmeep.roadrunner.entity.RoadRunnerBotEntity;
 
-import com.example.meepmeeptesting.FieldPositions;
-import com.example.meepmeeptesting.FieldPositions.StartingPosition;
-import com.example.meepmeeptesting.FieldPositions.Team;
-import com.example.meepmeeptesting.FieldPositions.SpikeMarkLocation;
+import com.example.meepmeeptesting.OldClawTrajectories.StartingPosition;
+import com.example.meepmeeptesting.OldClawTrajectories.Team;
+import com.example.meepmeeptesting.OldClawTrajectories.SpikeMarkLocation;
 
 import java.awt.Image;
 import java.io.File;
@@ -20,8 +16,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
-
-import jdk.javadoc.internal.tool.Start;
 
 public class MeepMeepTesting {
     public static void main(String[] args) {
@@ -31,7 +25,7 @@ public class MeepMeepTesting {
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
                 .setConstraints(50, 50, Math.toRadians(180), Math.toRadians(180), 14)
                 .build();
-        myBot.setDimensions(FieldPositions.getRobotSize().y, FieldPositions.getRobotSize().x);
+        myBot.setDimensions(OldClawTrajectories.getRobotSize().y, OldClawTrajectories.getRobotSize().x);
 
         // run sequence for state for every combination of spike mark location, team, and starting position
         ArrayList<Action> actions = new ArrayList<Action>();
@@ -72,10 +66,10 @@ public class MeepMeepTesting {
 
     private static Action getSequenceForState(RoadRunnerBotEntity myBot, SpikeMarkLocation spikeMarkLocation, Team team, StartingPosition startingPosition) {
         //return FieldPositions.getStraightToScoreFromBack(myBot.getDrive(), StartingPosition.Back, team, spikeMarkLocation);
-        Action goToSpikeMark = FieldPositions.getTrajToSpikeMark(myBot.getDrive(), startingPosition, team, spikeMarkLocation);
-        Action goToPrescorePoint = FieldPositions.getTrajEscapeSpikeMark(myBot.getDrive(), startingPosition, team, spikeMarkLocation, true);
-        Action scoreBackboard = FieldPositions.getTrajToScore(myBot.getDrive(), startingPosition, team, spikeMarkLocation);
-        Action park = FieldPositions.getTrajToPark(myBot.getDrive(), startingPosition, team, spikeMarkLocation, true);
+        Action goToSpikeMark = OldClawTrajectories.getTrajToSpikeMark(myBot.getDrive(), startingPosition, team, spikeMarkLocation);
+        Action goToPrescorePoint = OldClawTrajectories.getTrajEscapeSpikeMark(myBot.getDrive(), startingPosition, team, spikeMarkLocation, true);
+        Action scoreBackboard = OldClawTrajectories.getTrajToScore(myBot.getDrive(), startingPosition, team, spikeMarkLocation);
+        Action park = OldClawTrajectories.getTrajToPark(myBot.getDrive(), startingPosition, team, spikeMarkLocation, true);
         return
                 new SequentialAction(
                         goToSpikeMark,

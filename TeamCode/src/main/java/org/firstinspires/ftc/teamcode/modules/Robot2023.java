@@ -98,7 +98,7 @@ public class Robot2023 {
                 tfodController.onOpmodeInit(this, this.telemetry, autonomousController.team);
             } else {
                 telemetry.log().add("WARNING: tfod controller is running without an autonomous controller");
-                tfodController.onOpmodeInit(this, this.telemetry, FieldPositions.Team.Blue);
+                tfodController.onOpmodeInit(this, this.telemetry, KookyClawTrajectories.Team.Blue);
             }
         }
         if(droneController != null){

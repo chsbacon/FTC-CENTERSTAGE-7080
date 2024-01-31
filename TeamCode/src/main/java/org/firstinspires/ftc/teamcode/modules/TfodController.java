@@ -33,8 +33,8 @@ public class TfodController {
 
     private VisionPortal visionPortal;
     ElapsedTime pidTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-    public void onOpmodeInit(Robot2023 robot, Telemetry telemetry, FieldPositions.Team team){
-        if (team == FieldPositions.Team.Blue){
+    public void onOpmodeInit(Robot2023 robot, Telemetry telemetry, KookyClawTrajectories.Team team){
+        if (team == KookyClawTrajectories.Team.Blue){
             USED_MODEL_LOCATION = BLUE_TFOD_MODEL_ASSET;
         } else {
             USED_MODEL_LOCATION = RED_TFOD_MODEL_ASSET;
