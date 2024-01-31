@@ -38,15 +38,19 @@ public class AutonomousController {
     private boolean doScoreBackboard;
     private boolean doPark;
     private boolean doEarlyScore;
+    private double delay;
     private AutoState autoState = AutoState.NotStarted;
     private Robot2023 robot;
     private Telemetry telemetry;
     private KookyClawTrajectories.SpikeMarkLocation spikeMarkLocation;
     ActionExecutor actionExecutor = new ActionExecutor();
-    public void setSettings(KookyClawTrajectories.StartingPosition startingPosition, KookyClawTrajectories.Team team){
+    public void setSettings(KookyClawTrajectories.StartingPosition startingPosition, KookyClawTrajectories.Team team, boolean doScoreBackboard, boolean doPark, double delay){
         this.startingPosition = startingPosition;
         this.team = team;
         this.autoState = AutoState.NotStarted;
+        this.doScoreBackboard = doScoreBackboard;
+        this.doPark = doPark;
+        this.delay = delay;
     }
     public void onOpmodeInit(Robot2023 robot, Telemetry telemetry){
         this.robot = robot;
@@ -82,9 +86,33 @@ public class AutonomousController {
                     spikeMarkLocation = KookyClawTrajectories.SpikeMarkLocation.Center;
                     telemetry.log().add("Cound not get TFOD controller, assuming center mark");
                 }
-
+                if(delay > 0){
+                    actions.add(new SleepAction((long) (delay*1000)));
+                }
                 actions.add(KookyClawTrajectories.getPurplePixelTraj(robot.drive, startingPosition, team, spikeMarkLocation, robot.armController.openLeftClawAction()));
-                actions.add(KookyClawTrajectories.getPurpleOnlyFinishTraj(robot.drive, startingPosition, team, spikeMarkLocation));
+                if(!(doScoreBackboard || doPark)) {
+                    actions.add(KookyClawTrajectories.getPurpleOnlyFinishTraj(robot.drive, startingPosition, team, spikeMarkLocation));
+                }
+                if(doScoreBackboard){
+                    actions.add(new SequentialAction(
+                            new ParallelAction(
+                                KookyClawTrajectories.getTrajToBackboard(robot.drive, startingPosition, team, spikeMarkLocation),
+                                robot.armController.goToArmPositionAction(175)
+                            ),
+                            robot.armController.openRightClawAction(),
+                            new SleepAction(500),
+                            robot.armController.closeRightClawAction(),
+                            robot.armController.goToArmPositionAction(robot.armController.FOREARM_MIN)
+                    ));
+                }
+                if(doPark){
+                    if (doScoreBackboard){
+                        actions.add(KookyClawTrajectories.getTrajToParkFromBackboard(robot.drive, team, spikeMarkLocation));
+                    } else {
+                        telemetry.log().add("WARNING: Cannot park without first scoring. Robot will instead run purple pixel only finish trajectory.");
+                        actions.add(KookyClawTrajectories.getPurpleOnlyFinishTraj(robot.drive, startingPosition, team, spikeMarkLocation));
+                    }
+                }
 
                 // now, construct into one big SequentialAction
                 Action theAction = new SequentialAction(actions);

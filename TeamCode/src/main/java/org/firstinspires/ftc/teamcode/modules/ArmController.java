@@ -36,7 +36,7 @@ public class ArmController {
     // these are the left encoder numbers; the right encoder is not up to spec
     public final int FOREARM_MIN = 0;
     public final int FOREARM_PASSING = FOREARM_MIN;
-    public final int FOREARM_MAX = 190;
+    public final int FOREARM_MAX = 185;
     public static final int FOREARM_VERTICAL = 110;
     public final int FOREARM_PARALELL = 150;
     static final double DEGREES_PER_COREHEX_TICK = 360.0/288.0;
@@ -168,7 +168,7 @@ public class ArmController {
             armTargetLocation = ArmLocation.Score;
             actionExecutor.setAction(new ParallelAction(
                     //goToLinearHeightAction(LINEAR_MAX),
-                    goToArmPositionAction(FOREARM_PARALELL),
+                    goToArmPositionAction(175),
                     goToLinearHeightAction(LINEAR_MIN)
             ));
         }
@@ -176,8 +176,8 @@ public class ArmController {
             armTargetLocation = ArmLocation.Score;
             actionExecutor.setAction(new ParallelAction(
                     //goToLinearHeightAction(LINEAR_MAX),
-                    goToArmPositionAction(FOREARM_PARALELL),
-                    goToLinearHeightAction(1000)
+                    goToArmPositionAction(175),
+                    goToLinearHeightAction(LINEAR_MAX)
             ));
         }
         if(gamepad2.back && gamepad2.start){

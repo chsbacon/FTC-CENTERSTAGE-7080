@@ -36,6 +36,22 @@ public class KookyClawTrajectories {
             return insideIsLeft ? TrussRelativeLocation.Outside : TrussRelativeLocation.Inside;
         }
     }
+    public static enum BackboardRelativeLocation{
+        Inside,
+        Center,
+        Outside // adjacent to field wall
+    }
+    public static BackboardRelativeLocation getBRL(SpikeMarkLocation spikeMarkLocation, Team team){
+        if (spikeMarkLocation == SpikeMarkLocation.Center){
+            return BackboardRelativeLocation.Center;
+        }
+        boolean insideIsLeft = (team == Team.Red);
+        if (spikeMarkLocation == SpikeMarkLocation.Left){
+            return insideIsLeft ? BackboardRelativeLocation.Inside : BackboardRelativeLocation.Outside;
+        } else {
+            return insideIsLeft ? BackboardRelativeLocation.Outside : BackboardRelativeLocation.Inside;
+        }
+    }
     public enum SpikeMarkLocation {
         Left,
         Center,
@@ -172,6 +188,52 @@ public class KookyClawTrajectories {
         // it parks facing away from the wall
         return drive.actionBuilder(getPurplePixelFinalPose(startingPosition, team, spikeMarkLocation))
                 .turnTo(team == Team.Red ? Math.PI : 0)
+                .build();
+    }
+    public static final double backboardY = 60;
+    public static final double backboardCenterX = 36;
+    public static final double backboardInsideOffset = 6;
+    public static final double backboardOutsideOffset = 6;
+    public static Pose2d getBackboardScorePose(Team team, SpikeMarkLocation spikeMarkLocation){
+        BackboardRelativeLocation brl = getBRL(spikeMarkLocation, team);
+        Pose2d result;
+        double yPos = backboardY - getRobotSize().x/2 - 1;
+        // heading is always -Math.PI/2
+        if (brl == BackboardRelativeLocation.Center){
+            result = new Pose2d(backboardCenterX, yPos, -Math.PI/2);
+        } else if (brl == BackboardRelativeLocation.Inside){
+            result = new Pose2d(backboardCenterX - backboardInsideOffset, yPos, -Math.PI/2);
+        } else {
+            result = new Pose2d(backboardCenterX + backboardOutsideOffset, yPos, -Math.PI/2);
+        }
+        // and mirror if we're blue
+        if(team == Team.Blue){
+            result = new Pose2d(new Vector2d(-result.position.x, result.position.y), new Rotation2d(-result.heading.real, result.heading.imag));
+        }
+        return result;
+    }
+
+    public static Action getTrajToBackboard(MecanumDrive drive, StartingPosition startingPosition, Team team, SpikeMarkLocation spikeMarkLocation){
+        // this starts at where getPurplePixelTraj left off and heads to the backboard
+        // the final position is different depending on the spike mark location
+        double departureHeading = Math.PI/2;
+        Pose2d finalPose = getBackboardScorePose(team, spikeMarkLocation);
+
+
+        return drive.actionBuilder(getPurplePixelFinalPose(startingPosition, team, spikeMarkLocation))
+                .setTangent(departureHeading)
+                .splineToLinearHeading(finalPose, departureHeading)
+                .build();
+    }
+    public static Action getTrajToParkFromBackboard(MecanumDrive drive, Team team, SpikeMarkLocation spikeMarkLocation){
+        // this starts at where getTrajToBackboard left off and parks
+        // the final position is different depending on the spike mark location
+        double robotFinalHeading = team == Team.Red ? Math.PI : 0; // end facing away from team's wall
+
+        return drive.actionBuilder(getBackboardScorePose(team, spikeMarkLocation))
+                .setTangent(robotFinalHeading)
+                .lineToX(team == Team.Red ? 12 : -12)
+                .turnTo(robotFinalHeading)
                 .build();
     }
 }

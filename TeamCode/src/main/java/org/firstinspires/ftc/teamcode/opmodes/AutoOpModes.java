@@ -15,11 +15,11 @@ public class AutoOpModes {
         // register a permutation for every possible combination of starting position, team, and whether or not to score the backboard and park
         for (KookyClawTrajectories.Team team : KookyClawTrajectories.Team.values()){
             for (KookyClawTrajectories.StartingPosition startingPosition : KookyClawTrajectories.StartingPosition.values()){
-                //for (boolean doScoreBackboard : new boolean[]{true, false}){
-                    //for (boolean doPark : new boolean[]{true, false}){
-                        registerPermutation(manager, team, startingPosition, false, false); //doScoreBackboard, doPark);
-                    //}
-                //}
+                for (boolean doScoreBackboard : new boolean[]{true, false}){
+                    for (boolean doPark : new boolean[]{true, false}){
+                        registerPermutation(manager, team, startingPosition, doScoreBackboard, doPark);
+                    }
+                }
             }
         }
     }
@@ -60,7 +60,7 @@ class AutonomousOpMode extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         robot = new Robot2023(this, new MecanumDrive(hardwareMap, KookyClawTrajectories.getStartingPose(startingPosition, team)), true, false, false, true, true, true);
-        robot.autonomousController.setSettings(startingPosition, team);
+        robot.autonomousController.setSettings(startingPosition, team, doScoreBackboard, doPark, 0);
         robot.onOpmodeInit();
         waitForStart();
 

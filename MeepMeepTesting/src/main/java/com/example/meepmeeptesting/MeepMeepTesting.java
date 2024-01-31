@@ -55,11 +55,13 @@ public class MeepMeepTesting {
     private static Action getSequenceForKooky(RoadRunnerBotEntity myBot, KookyClawTrajectories.SpikeMarkLocation spikeMarkLocation, KookyClawTrajectories.Team team, KookyClawTrajectories.StartingPosition startingPosition) {
         //return FieldPositions.getStraightToScoreFromBack(myBot.getDrive(), StartingPosition.Back, team, spikeMarkLocation);
         Action purplePixelTraj = KookyClawTrajectories.getPurplePixelTraj(myBot.getDrive(), startingPosition, team, spikeMarkLocation, new SequentialAction());
-        Action finishTraj = KookyClawTrajectories.getPurpleOnlyFinishTraj(myBot.getDrive(), startingPosition, team, spikeMarkLocation);
+        Action goBackboardTraj = KookyClawTrajectories.getTrajToBackboard(myBot.getDrive(), startingPosition, team, spikeMarkLocation);
+        Action finishTraj = KookyClawTrajectories.getTrajToParkFromBackboard(myBot.getDrive(), team, spikeMarkLocation);
 
         return
                 new SequentialAction(
                         purplePixelTraj,
+                        goBackboardTraj,
                         finishTraj
                 );
     }
