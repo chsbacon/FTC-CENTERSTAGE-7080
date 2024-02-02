@@ -43,7 +43,7 @@ public class ArmController {
     private ElapsedTime loopTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
 
     // expects to be initted with arm in intake
-    PIDController forearmPID = new PIDController(0.005, 0.0007, 0.0013); // old: 0.004, 0.0007, 0.0013; old old: 0.004, 0.01, 0.0007
+    public PIDController forearmPID = new PIDController(0.005, 0.0007, 0.0013); // old: 0.004, 0.0007, 0.0013; old old: 0.004, 0.01, 0.0007
     double gravityGain = 0.1; // old: 0.1; old old: 0.1
     double frictionGain = 0.1; // old: 0.11; old old: 0.1
     final double cgOffset = 0; // degrees off arm

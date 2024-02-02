@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.modules;
 
 import static com.acmerobotics.roadrunner.ftc.Actions.runBlocking;
 
+import androidx.annotation.NonNull;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
@@ -95,12 +97,28 @@ public class AutonomousController {
                 }
                 if(doScoreBackboard){
                     actions.add(new SequentialAction(
+                            new Action() {
+                                @Override
+                                public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                                        robot.armController.forearmPID.setTolerance(11);
+                                    // telemetryPacket.addLine("Claw closed");
+                                    return false;
+                                }
+                            },
                             new ParallelAction(
                                 KookyClawTrajectories.getTrajToBackboard(robot.drive, startingPosition, team, spikeMarkLocation),
                                 robot.armController.goToArmPositionAction(150)
                             ),
                             robot.armController.openRightClawAction(),
                             new SleepAction(0.5),
+                            new Action() {
+                                @Override
+                                public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                                    robot.armController.forearmPID.setTolerance(4);
+                                    // telemetryPacket.addLine("Claw closed");
+                                    return false;
+                                }
+                            },
                             robot.armController.goToArmPositionAction(robot.armController.FOREARM_MIN),
                             robot.armController.closeRightClawAction()
                     ));
