@@ -97,12 +97,12 @@ public class AutonomousController {
                     actions.add(new SequentialAction(
                             new ParallelAction(
                                 KookyClawTrajectories.getTrajToBackboard(robot.drive, startingPosition, team, spikeMarkLocation),
-                                robot.armController.goToArmPositionAction(175)
+                                robot.armController.goToArmPositionAction(155)
                             ),
                             robot.armController.openRightClawAction(),
-                            new SleepAction(500),
-                            robot.armController.closeRightClawAction(),
-                            robot.armController.goToArmPositionAction(robot.armController.FOREARM_MIN)
+                            new SleepAction(0.5),
+                            robot.armController.goToArmPositionAction(robot.armController.FOREARM_MIN),
+                            robot.armController.closeRightClawAction()
                     ));
                 }
                 if(doPark){

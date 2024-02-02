@@ -9,8 +9,6 @@ import com.acmerobotics.roadrunner.Vector2d;
 
 import org.firstinspires.ftc.teamcode.hardware.MecanumDrive;
 
-import java.util.Vector;
-
 public class KookyClawTrajectories {
     public enum StartingPosition {
         Front,
@@ -62,7 +60,7 @@ public class KookyClawTrajectories {
         // x is forward/back, y is left/right
     }
     public static final double sideShieldLength = 3;
-    public static final Vector2d pixelRobotOffset = new Vector2d(getRobotSize().x/2 + 1, -2); // left claw
+    public static final Vector2d pixelRobotOffset = new Vector2d(getRobotSize().x/2, -2); // left claw
     public static Pose2d getStartingPose(StartingPosition startingPosition, Team team){
         // centered in tile, FACING INTO THE WALL
         if (startingPosition == StartingPosition.Front){
@@ -79,7 +77,7 @@ public class KookyClawTrajectories {
             }
         }
     }
-    public static Pose2d getPurplePixelFinalPose(StartingPosition startingPosition, Team team, SpikeMarkLocation spikeMarkLocation){
+    public static Pose2d getPurplePixelBackupPose(StartingPosition startingPosition, Team team, SpikeMarkLocation spikeMarkLocation){
         // final pose after purple pixel is deposited
         // for red vs blue it's just a reflection over the y axis
         // when pixel is Inside, this pose is in the outside (y pos -48/24) of the spike mark tile (x pos +- 36), facing the truss
@@ -94,9 +92,9 @@ public class KookyClawTrajectories {
         Pose2d result;
         if(trl == TrussRelativeLocation.Center){
             if(startingPosition == StartingPosition.Front){
-                result = new Pose2d(12, -36, 0);
+                result = new Pose2d(13.5, -36, 0);
             } else {
-                result = new Pose2d(12, 12, 0);
+                result = new Pose2d(13.5, 12, 0);
             }
         } else if(trl == TrussRelativeLocation.Inside){
             if(startingPosition == StartingPosition.Front){
@@ -105,7 +103,7 @@ public class KookyClawTrajectories {
                 result = new Pose2d(depositPose.position.x, 24, -Math.PI/2);
             }
         } else if(trl == TrussRelativeLocation.Outside){
-            result = new Pose2d(12, depositPose.position.y, 0);
+            result = new Pose2d(18, depositPose.position.y, 0);
         } else {
             // unreachable
             result = new Pose2d(0, 0, 0);
@@ -136,15 +134,15 @@ public class KookyClawTrajectories {
             }
         } else if(trl == TrussRelativeLocation.Inside){
             if(startingPosition == StartingPosition.Front){
-                result = new Pose2d(30, -24 - pixelRobotOffset.x, Math.PI/2);
+                result = new Pose2d(32, -24 - pixelRobotOffset.x, Math.PI/2);
             } else {
-                result = new Pose2d(30, 0 + pixelRobotOffset.x, -Math.PI/2);
+                result = new Pose2d(32, 0 + pixelRobotOffset.x, -Math.PI/2);
             }
         } else if(trl == TrussRelativeLocation.Outside){
             if(startingPosition == StartingPosition.Front){
-                result = new Pose2d(30 - pixelRobotOffset.x, -46 + pixelRobotOffset.y, 0);
+                result = new Pose2d(30 - pixelRobotOffset.x, -49 + pixelRobotOffset.y, 0);
             } else {
-                result = new Pose2d(30 - pixelRobotOffset.x, 22 + pixelRobotOffset.y, 0);
+                result = new Pose2d(30 - pixelRobotOffset.x, 24 + pixelRobotOffset.y, 0);
             }
         } else {
             // unreachable
@@ -168,7 +166,7 @@ public class KookyClawTrajectories {
         double departureHeading = getStartingPose(startingPosition, team).heading.log() + Math.PI; // leave the wall backwards
         Pose2d depositPose = getPurplePixelDepositPose(startingPosition, team, spikeMarkLocation);
         Rotation2d depositHeading = new Rotation2d(-depositPose.heading.real, depositPose.heading.imag); // a trick to arrive at inside poses facing forward but outside/center poses facing backward
-        Pose2d finalPose = getPurplePixelFinalPose(startingPosition, team, spikeMarkLocation);
+        Pose2d finalPose = getPurplePixelBackupPose(startingPosition, team, spikeMarkLocation);
 
         return new SequentialAction(
                 drive.actionBuilder(getStartingPose(startingPosition, team))
@@ -186,9 +184,18 @@ public class KookyClawTrajectories {
     public static Action getPurpleOnlyFinishTraj(MecanumDrive drive, StartingPosition startingPosition, Team team, SpikeMarkLocation spikeMarkLocation){
         // this is called if we are only scoring purple
         // it parks facing away from the wall
-        return drive.actionBuilder(getPurplePixelFinalPose(startingPosition, team, spikeMarkLocation))
-                .turnTo(team == Team.Red ? Math.PI : 0)
-                .build();
+        TrussRelativeLocation trl = getTRL(spikeMarkLocation, startingPosition, team);
+        if(trl == TrussRelativeLocation.Center){
+            return drive.actionBuilder(getPurplePixelBackupPose(startingPosition, team, spikeMarkLocation))
+                    .setTangent(startingPosition == StartingPosition.Front ? -Math.PI/2 : Math.PI/2)
+                    .lineToY(startingPosition == StartingPosition.Front ? -52 : 28)
+                    .turnTo(team == Team.Red ? Math.PI : 0)
+                    .build();
+        } else {
+            return drive.actionBuilder(getPurplePixelBackupPose(startingPosition, team, spikeMarkLocation))
+                    .turnTo(team == Team.Red ? Math.PI : 0)
+                    .build();
+        }
     }
     public static final double backboardY = 60;
     public static final double backboardCenterX = 36;
@@ -220,7 +227,7 @@ public class KookyClawTrajectories {
         Pose2d finalPose = getBackboardScorePose(team, spikeMarkLocation);
 
 
-        return drive.actionBuilder(getPurplePixelFinalPose(startingPosition, team, spikeMarkLocation))
+        return drive.actionBuilder(getPurplePixelBackupPose(startingPosition, team, spikeMarkLocation))
                 .setTangent(departureHeading)
                 .splineToLinearHeading(finalPose, departureHeading)
                 .build();
