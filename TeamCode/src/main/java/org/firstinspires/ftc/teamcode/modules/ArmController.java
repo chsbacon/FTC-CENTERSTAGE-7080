@@ -28,7 +28,7 @@ public class ArmController {
     private final double RIGHT_CLAW_OPEN = 0.8;
     private final double RIGHT_CLAW_CLOSED = 1;
     private final double WRIST_GROUND_POS = 0.17;
-    private final double WRIST_PARALLEL_POS = 0;
+    private double WRIST_PARALLEL_POS = -0.04;
     private final double WRIST_DEGREES_PER_POS = 258; // empirical data
     public final int LINEAR_MIN = 0;
     public final int LINEAR_MAX = 2500;
@@ -126,22 +126,8 @@ public class ArmController {
         };
     }
     public void doLoop(Gamepad gamepad1, Gamepad gamepad2){
-        if (gamepad2.left_trigger > 0.5){
-            //telemetry.log().add("HI close claw");
-            closeLeftClaw();
-        }
-        if (gamepad2.right_trigger > 0.5){
-            //telemetry.log().add("HI close claw");
-            closeRightClaw();
-        }
-        if (gamepad2.left_bumper){
-            //telemetry.log().add("HI open claw");
-            openLeftClaw();
-        }
-        if (gamepad2.right_bumper){
-            //telemetry.log().add("HI open claw");
-            openRightClaw();
-        }
+        doManualClaw(gamepad2);
+
         ArmLocation armTargetLocation = getArmLocationFromPositions((int)forearmPID.getSetPoint(), robot.linearExtenderMotor.getTargetPosition());
         ArmLocation armCurrentLocation = getArmLocationFromPositions(robot.leftForearmMotor.getCurrentPosition(), robot.linearExtenderMotor.getCurrentPosition());
 
@@ -168,7 +154,7 @@ public class ArmController {
             armTargetLocation = ArmLocation.Score;
             actionExecutor.setAction(new ParallelAction(
                     //goToLinearHeightAction(LINEAR_MAX),
-                    goToArmPositionAction(175),
+                    goToArmPositionAction(800),
                     goToLinearHeightAction(LINEAR_MIN)
             ));
         }
@@ -217,6 +203,33 @@ public class ArmController {
         telemetry.addData("aciton active: ", actionExecutor.actionIsActive());
         //telemetry.update();
         loopTimer.reset();
+    }
+
+    private void doManualClaw(Gamepad gamepad2) {
+        // pixel grab control
+        if (gamepad2.left_trigger > 0.5){
+            //telemetry.log().add("HI close claw");
+            closeLeftClaw();
+        }
+        if (gamepad2.right_trigger > 0.5){
+            //telemetry.log().add("HI close claw");
+            closeRightClaw();
+        }
+        if (gamepad2.left_bumper){
+            //telemetry.log().add("HI open claw");
+            openLeftClaw();
+        }
+        if (gamepad2.right_bumper){
+            //telemetry.log().add("HI open claw");
+            openRightClaw();
+        }
+        // wrist offset angle control
+        if(gamepad2.dpad_up){
+            WRIST_PARALLEL_POS -= 0.005; //  this loop runs at about 20hz so one sec of hold will do 0.1 total
+        }
+        if(gamepad2.dpad_down){
+            WRIST_PARALLEL_POS += 0.005;
+        }
     }
 
     private void doArmControl() {
