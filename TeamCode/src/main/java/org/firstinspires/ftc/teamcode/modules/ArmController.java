@@ -27,7 +27,7 @@ public class ArmController {
     private final double LEFT_CLAW_CLOSED = 0;
     private final double RIGHT_CLAW_OPEN = 0.8;
     private final double RIGHT_CLAW_CLOSED = 1;
-    private final double WRIST_GROUND_POS = 0.17;
+    private final double WRIST_GROUND_POS = 0.19;
     private double WRIST_PARALLEL_POS = -0.04;
     private final double WRIST_DEGREES_PER_POS = 258; // empirical data
     public final int LINEAR_MIN = 0;
