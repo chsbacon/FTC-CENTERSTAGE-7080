@@ -22,7 +22,7 @@ public class DroneController {
     }
 
     public void doLoop(Gamepad gamepad1, Gamepad gamepad2){
-        if (gamepad2.dpad_left && gamepad2.a){
+        if (gamepad2.dpad_left && gamepad2.b){
             //telemetry.log().add("HI, I use spinTake");
             releaseDrone();
         } else {

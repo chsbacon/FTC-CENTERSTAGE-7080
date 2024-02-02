@@ -150,7 +150,7 @@ public class ArmController {
                     goToArmPositionAction(FOREARM_VERTICAL)
             ));
         }
-        if(gamepad2.b){
+        if(gamepad2.b && !gamepad2.dpad_left){
             armTargetLocation = ArmLocation.Score;
             actionExecutor.setAction(new ParallelAction(
                     //goToLinearHeightAction(LINEAR_MAX),

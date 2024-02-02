@@ -149,6 +149,9 @@ public class DriveController {
             targetAngle = 0; // don't go crazy on yaw reset
             shouldDriveNewAngle = true;
         }
+        if(gamepad1.back && gamepad1.start){
+            drive.initializeIMU(robot.hardwareMap);
+        }
 //        telemetry.addData("X final", x_vel);
 //        telemetry.addData("Y final", y_vel);
 //        telemetry.addData("Angle final", targetAngle);
