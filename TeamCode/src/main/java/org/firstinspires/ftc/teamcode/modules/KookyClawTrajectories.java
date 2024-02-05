@@ -238,9 +238,9 @@ public class KookyClawTrajectories {
         double robotFinalHeading = team == Team.Red ? Math.PI : 0; // end facing away from team's wall
 
         return drive.actionBuilder(getBackboardScorePose(team, spikeMarkLocation))
-                .setTangent(robotFinalHeading)
-                .lineToX(team == Team.Red ? 12 : -12)
-                .turnTo(robotFinalHeading)
+                .setTangent(robotFinalHeading+Math.PI)
+                .lineToX(team == Team.Red ? 62 : -62)
+                //.turnTo(robotFinalHeading)
                 .build();
     }
 }

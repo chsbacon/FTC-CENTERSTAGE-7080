@@ -190,7 +190,7 @@ public class KookyClawTrajectories {
                 .turnTo(team == Team.Red ? Math.PI : 0)
                 .build();
     }
-    public static final double backboardY = 60;
+    public static final double backboardY = 63;
     public static final double backboardCenterX = 36;
     public static final double backboardInsideOffset = 6;
     public static final double backboardOutsideOffset = 6;
@@ -231,9 +231,9 @@ public class KookyClawTrajectories {
         double robotFinalHeading = team == Team.Red ? Math.PI : 0; // end facing away from team's wall
 
         return drive.actionBuilder(getBackboardScorePose(team, spikeMarkLocation))
-                .setTangent(robotFinalHeading)
-                .lineToX(team == Team.Red ? 12 : -12)
-                .turnTo(robotFinalHeading)
+                .setTangent(robotFinalHeading+Math.PI)
+                .lineToX(team == Team.Red ? 62 : -62)
+                //.turnTo(robotFinalHeading)
                 .build();
     }
 }
