@@ -30,6 +30,7 @@ public class Robot2023 {
     MecanumDrive drive;
     Telemetry telemetry;
     WebcamName webcam;
+    public boolean demoMode = false;
 
     public Robot2023(LinearOpMode opMode, MecanumDrive drive, boolean doArmController, boolean doDriveController, boolean doAprilTags, boolean doTfod, boolean doAuto, boolean doDrone){
         this.hardwareMap = opMode.hardwareMap;

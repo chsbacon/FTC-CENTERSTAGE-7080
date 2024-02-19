@@ -1,13 +1,8 @@
 package org.firstinspires.ftc.teamcode.modules;
 
-import static org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit.DEGREES;
-
 import com.qualcomm.robotcore.hardware.Gamepad;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.robot.Robot;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.checkerframework.checker.units.qual.Angle;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
@@ -114,11 +109,11 @@ public class DriveController {
     public void doLoop(Gamepad gamepad1, Gamepad gamepad2){
         double x_vel = gamepad1.left_stick_x;
         double y_vel = -gamepad1.left_stick_y;
-        if(gamepad1.left_trigger >= 0.5){
+        if(gamepad1.left_trigger >= 0.5 || robot.demoMode){
             x_vel *= 0.25;
             y_vel *= 0.25;
         }
-        if(gamepad1.right_trigger <= 0.5 && gamepad1.left_trigger <= 0.5){
+        if(gamepad1.right_trigger <= 0.5 && gamepad1.left_trigger <= 0.5 && !robot.demoMode){
             x_vel *= 0.5;
             y_vel *= 0.5;
         }
