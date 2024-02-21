@@ -75,7 +75,7 @@ public class DriveController {
         pidTimer.reset();
         return out;
     }
-    public void driveMecanum(double xPower, double yPower, double targetRad, boolean shouldDriveNewAngle){
+    public void driveMecanum(double xPower, double yPower, double targetRad, boolean shouldDriveNewAngle, boolean shouldEStop){
         YawPitchRollAngles angles =  drive.imu.getRobotYawPitchRollAngles();
         botHeading = -angles.getYaw(AngleUnit.RADIANS);
 
@@ -99,11 +99,12 @@ public class DriveController {
         double backLeftPower = (rotYPower - rotXPower + anglePower) / denominator;
         double frontRightPower = (rotYPower - rotXPower - anglePower) / denominator;
         double backRightPower = (rotYPower + rotXPower - anglePower) / denominator;
-
-        drive.leftFront.setPower(frontLeftPower);
-        drive.leftBack.setPower(backLeftPower);
-        drive.rightFront.setPower(frontRightPower);
-        drive.rightBack.setPower(backRightPower);
+        if(!shouldEStop) {
+            drive.leftFront.setPower(frontLeftPower);
+            drive.leftBack.setPower(backLeftPower);
+            drive.rightFront.setPower(frontRightPower);
+            drive.rightBack.setPower(backRightPower);
+        }
 
     }
     public void doLoop(Gamepad gamepad1, Gamepad gamepad2){
@@ -154,6 +155,6 @@ public class DriveController {
 //        telemetry.addData("Current heading", botHeading);
 //        telemetry.update();
 
-        driveMecanum(x_vel, y_vel, targetAngle, shouldDriveNewAngle);
+        driveMecanum(x_vel, y_vel, targetAngle, shouldDriveNewAngle, robot.demoMode && gamepad2.left_trigger > 0.5  );
     }
 }
